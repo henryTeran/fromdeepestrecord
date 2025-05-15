@@ -9,7 +9,7 @@ const newArrivals = [
       title: "Eternal Crypt of Darkness",
       band: "Morbid Execution",
       price: 12.99,
-      image: "https://images.unsplash.com/photo-1619983081563-430f63602796?auto=format&fit=crop&w=150"
+      image: "https://www.metal-archives.com/images/2/7/9/9/279984.jpg?0436"
     },
     // Ajoute plus d'objets ici si nécessaire
 ];

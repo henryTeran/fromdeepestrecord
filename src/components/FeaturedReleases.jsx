@@ -8,7 +8,7 @@ const featuredItems = [
     title: "Blasphemous Death Ritual",
     band: "Necromantic Worship",
     price: 24.99,
-    image: "https://images.unsplash.com/photo-1619983081563-430f63602796?auto=format&fit=crop&w=500"
+    image: "https://www.metal-archives.com/images/1/0/6/0/1060042.jpg?0935"
   },
   // Ajoute plus d'objets ici si tu veux plus de releases
 ];

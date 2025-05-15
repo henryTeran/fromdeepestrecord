@@ -21,7 +21,7 @@ function App() {
       {/* <MetalMerch /> */}
       <FeaturedReleases />
       <NewArrivals /> 
-      <Newsletter />
+      {/* <Newsletter /> */}
       <Footer /> 
     </div>
   );
