@@ -3,11 +3,16 @@ import React from 'react';
 import { LanguageSelector } from './LanguageSelector';
 import { Search, User, Heart, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useCartStore } from '../store/cartStore';
+import { useWishlistStore } from '../store/wishlistStore';
 
 const DesktopMenu = () => {
   const { t } = useLanguage();
+  const favCount = useWishlistStore(state => state.wishlist.length);
+  const cartCount = useCartStore(state => state.cart.length);
+
   return (
-    <div className="hidden lg:flex items-center space-x-6">
+    <div className="lg:flex items-center space-x-6">
       <LanguageSelector />
       <div className="relative">
         <input 
@@ -21,12 +26,13 @@ const DesktopMenu = () => {
         <a href="#" className="hover:text-red-600 transition-colors text-white">
           <User className="w-5 h-5" />
         </a>
-        <a href="#" className="hover:text-red-600 transition-colors text-white">
+        <a href="/wishlist" className="hover:text-red-600 transition-colors flex items-center text-white">
           <Heart className="w-5 h-5" />
+          <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">{favCount}</span>
         </a>
-        <a href="#" className="hover:text-red-600 transition-colors flex items-center text-white">
+        <a href="/cart" className="hover:text-red-600 transition-colors flex items-center text-white">
           <ShoppingCart className="w-5 h-5" />
-          <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">0</span>
+          <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">{cartCount}</span>
         </a>
       </div>
     </div>
