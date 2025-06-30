@@ -13,7 +13,7 @@ export const products = [
     band: "Morbid Execution",
     price: 12.99,
     image: "https://www.metal-archives.com/images/2/7/9/9/279984.jpg?0436",
-    category: "featured"
+    category: "new"
   },
   {
     id: 3,
@@ -21,7 +21,7 @@ export const products = [
     band: "Sacrilegious Torment",
     price: 19.99,
     image: "https://www.metal-archives.com/images/1/0/3/7/1037682.jpg",
-    category: "featured"
+    category: "new"
   },
   {
     id: 4,
