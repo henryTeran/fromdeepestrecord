@@ -1,27 +1,37 @@
-import React from 'react';
+import { X } from 'lucide-react';
+import { categories } from '../data/categories';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Search, User, Heart, ShoppingCart } from 'lucide-react';
-import { LanguageSelector } from './LanguageSelector';
 
-const MobileMenu = () => {
+const MobileMenu = ({ onClose }) => {
   const { t } = useLanguage();
+
   return (
-    <div className="lg:hidden bg-black border-b border-zinc-800 p-4">
-      <div className="flex flex-col space-y-4">
-        <div className="relative">
-          <input type="text" placeholder={t('search')} className="w-full bg-zinc-800 text-gray-300 px-4 py-2 pl-10 rounded-full focus:outline-none focus:ring-1 focus:ring-red-600"/>
-          <Search className="w-5 h-5 absolute left-3 top-2.5 text-gray-400"/>
+    // overlay fond sombre
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-80">
+      {/* drawer blanc latéral */}
+      <div className="w-[80%] sm:w-[300px] h-full bg-black text-white shadow-xl overflow-y-auto">
+        {/* header avec bouton fermer */}
+        <div className="flex justify-between items-center px-4 py-3 border-b border-zinc-200">
+          <h2 className="font-bold text-lg">Menu</h2>
+          <button onClick={onClose}>
+            <X className="w-6 h-6" />
+          </button>
         </div>
-        <LanguageSelector />
-        <a href="#" className="flex items-center hover:text-red-600">
-          <User className="w-5 h-5 mr-2"/>{t('account')}
-        </a>
-        <a href="#" className="flex items-center hover:text-red-600">
-          <Heart className="w-5 h-5 mr-2"/>{t('wishlist')}
-        </a>
-        <a href="#" className="flex items-center hover:text-red-600">
-          <ShoppingCart className="w-5 h-5 mr-2"/>{t('cart')} (0)
-        </a>
+
+        {/* liens */}
+        <div className="px-4 py-4 space-y-4">
+          {categories.map(({ icon: Icon, label }) => (
+            <a
+              key={label}
+              href="#"
+              onClick={onClose}
+              className="flex items-center text-white hover:text-red-600 border-b border-gray-200 pb-2"
+            >
+              <Icon className="w-4 h-4 mr-2" />
+              {t(label)}
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

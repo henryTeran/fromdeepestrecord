@@ -1,20 +1,19 @@
 import React from "react";
 import { Heart, Calendar } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { products } from "../data/products";
+import { useCartStore } from "../store/cartStore";
+import { Link } from "react-router-dom";
+import { useWishlistStore } from "../store/wishlistStore";
 
 
-const newArrivals = [
-    {
-      id: 1,
-      title: "Eternal Crypt of Darkness",
-      band: "Morbid Execution",
-      price: 12.99,
-      image: "https://www.metal-archives.com/images/2/7/9/9/279984.jpg?0436"
-    },
-    // Ajoute plus d'objets ici si nécessaire
-];
+const newArrivals = products.filter((item) => item.category === "new");
+
 export const NewArrivals = () => {
-    
+    const addToCart = useCartStore((state) => state.addToCart);
+    const addToWishlist = useWishlistStore(state => state.addToWishlist);
+    const removeFromWishlist = useWishlistStore(state => state.removeFromWishlist);
+    const isInWishlist = useWishlistStore(state => state.isInWishlist);
     const { t } = useLanguage();
   
     return (
@@ -36,15 +35,28 @@ export const NewArrivals = () => {
                   className="w-24 h-24 object-cover rounded"
                 />
                 <div className="flex-1">
-                  <h3 className="font-bold mb-1">{item.title}</h3>
+                  <Link to={`/product/${item.id}`} className="text-sm font-bold group-hover:text-red-600 transition-colors">
+                    {item.title}
+                  </Link>
                   <p className="text-sm text-gray-400 mb-2">{item.band}</p>
                   <div className="flex justify-between items-center">
                     <span className="text-red-600 font-bold">${item.price.toFixed(2)}</span>
                     <div className="flex space-x-2">
-                      <button className="p-2 rounded hover:bg-zinc-700 transition-colors">
+                      {/* <button className="p-2 rounded hover:bg-zinc-700 transition-colors">
                         <Heart className="w-4 h-4" />
+                      </button> */}
+                      <button
+                        onClick={() =>
+                          isInWishlist(item.id) ? removeFromWishlist(item.id) : addToWishlist(item)
+                        }
+                        className="p-2 rounded hover:bg-zinc-700 transition-colors"
+                      >
+                        <Heart className={`w-4 h-4 ${isInWishlist(item.id) ? 'text-red-600' : ''}`} />
                       </button>
-                      <button className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700 transition-colors">
+                      <button
+                        onClick={() => addToCart(item)}
+                        className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition-colors"
+                      >
                         {t("addToCart")}
                       </button>
                     </div>
