@@ -1,21 +1,20 @@
 import React from "react";
 import { Disc2, Heart } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Link } from "react-router-dom";
+import { products } from "../data/products";
+import { useCartStore } from '../store/cartStore';
+import { useWishlistStore } from '../store/wishlistStore';
 
-const featuredItems = [
-  {
-    id: 1,
-    title: "Blasphemous Death Ritual",
-    band: "Necromantic Worship",
-    price: 24.99,
-    image: "https://www.metal-archives.com/images/1/0/6/0/1060042.jpg?0935"
-  },
-  // Ajoute plus d'objets ici si tu veux plus de releases
-];
+const featuredItems = products.filter((item) => item.category === "featured");
 
 const FeaturedReleases = () => {
   const { t } = useLanguage();
- 
+  const addToCart = useCartStore((state) => state.addToCart);
+  const addToWishlist = useWishlistStore(state => state.addToWishlist);
+  const removeFromWishlist = useWishlistStore(state => state.removeFromWishlist);
+  const isInWishlist = useWishlistStore(state => state.isInWishlist);
+
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12">
@@ -32,17 +31,25 @@ const FeaturedReleases = () => {
                 alt={item.title}
                 className="w-full aspect-square object-cover rounded group-hover:opacity-75 transition-opacity"
               />
-              <button className="absolute top-4 right-4 bg-black/50 p-2 rounded-full hover:bg-red-600 transition-colors">
-                <Heart className="w-4 h-4" />
-              </button>
+            <button
+              onClick={() =>
+                isInWishlist(item.id) ? removeFromWishlist(item.id) : addToWishlist(item)
+              }
+              className="absolute top-4 right-4 bg-black/50 p-2 rounded-full hover:bg-red-600 transition-colors"
+            >
+              <Heart className={`w-4 h-4 ${isInWishlist(item.id) ? 'text-red-600' : ''}`} />
+            </button>
             </div>
-            <h3 className="text-sm font-bold group-hover:text-red-600 transition-colors">
+            <Link to={`/product/${item.id}`} className="text-sm font-bold group-hover:text-red-600 transition-colors">
               {item.title}
-            </h3>
+            </Link>
             <p className="text-xs text-gray-400">{item.band}</p>
             <div className="flex justify-between items-center mt-2">
               <span className="text-sm font-bold">${item.price.toFixed(2)}</span>
-              <button className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition-colors">
+              <button
+                onClick={() => addToCart(item)}
+                className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition-colors"
+              >
                 {t("addToCart")}
               </button>
             </div>

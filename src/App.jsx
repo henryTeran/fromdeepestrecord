@@ -1,29 +1,23 @@
 import './styles/index.css';
-import Header from './components/Header';
-import Navigation from './components/Navigation';
-import CategoryNav from './components/CategoryNav';
-import HeroBanner from './components/HeroBanner';
-
-import FeaturedReleases from './components/FeaturedReleases';
-import { NewArrivals } from './components/NewArrivals';
-import { Newsletter } from './components/Newsletter';
-import { Footer } from './components/Footer';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/home';
+import ProductPage from './pages/ProductPage';
+import Cart from './pages/Cart';
+import Wishlist from './pages/Wishlist';
 
 function App() {
 
 
   return (
     <div className="min-h-screen bg-zinc-900 text-gray-300">
-      <Header />
-      <Navigation />
-      <CategoryNav />
-      <HeroBanner />
-      {/* <MetalMerch /> */}
-      <FeaturedReleases />
-      <NewArrivals /> 
-      {/* <Newsletter /> */}
-      <Footer /> 
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/product/:id" element={<ProductPage />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+      </Routes>
     </div>
+
   );
 }
 
