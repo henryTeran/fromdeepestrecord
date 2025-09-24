@@ -17,6 +17,13 @@ export const useCartStore = create(persist(
         });
       }
     },
+    updateQuantity: (id, quantity) => {
+      set({
+        cart: get().cart.map(item =>
+          item.id === id ? { ...item, quantity } : item
+        )
+      });
+    },
     removeFromCart: (id) => {
       set({
         cart: get().cart.filter(item => item.id !== id)
