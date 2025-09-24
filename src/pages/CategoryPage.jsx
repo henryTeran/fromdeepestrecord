@@ -9,6 +9,7 @@ import { useCartStore } from '../store/cartStore';
 import { useWishlistStore } from '../store/wishlistStore';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import Head from '../seo/Head';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -39,6 +40,10 @@ const CategoryPage = () => {
   if (category === 'contact') {
     return (
       <div className="min-h-screen bg-zinc-900 text-gray-300">
+        <Head
+          title="Contact Us | From Deepest Record"
+          description="Get in touch with From Deepest Record. Contact information and message form."
+        />
         <Header />
         <Navigation />
         <CategoryNav />
@@ -97,6 +102,10 @@ const CategoryPage = () => {
 
   return (
     <div className="min-h-screen bg-zinc-900 text-gray-300">
+      <Head
+        title={`${getCategoryTitle(category)} | From Deepest Record`}
+        description={`Browse our collection of ${getCategoryTitle(category).toLowerCase()} from the underground metal scene.`}
+      />
       <Header />
       <Navigation />
       <CategoryNav />
