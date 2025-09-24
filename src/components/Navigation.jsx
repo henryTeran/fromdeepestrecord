@@ -1,4 +1,4 @@
-import DesktopMenu from './DesktopMenu';
+import DesktopMenu from './DeskTopMenu';
 import MobileHeader from './MobileHeader';
 import logo from '../assets/logo.jpeg';
 import { Link } from 'react-router-dom';
