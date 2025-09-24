@@ -1,33 +1,36 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { categories } from '../data/categories';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-
-import MobileMenu from './MobileMenu';
 
 const CategoryNav = () => {
   const { t } = useLanguage();
   const location = useLocation();
 
   return (
-    
-    <div className="bg-zinc-800 py-3 sticky top-20 z-40">
-      <div className="max-w-7xl mx-auto px-4 flex justify-center space-x-6 overflow-x-auto">
-        
-        {categories.map(({ icon: Icon, label }) => (
-          <Link 
-            key={label} 
-            to={`/category/${label}`} 
-            className={`flex items-center text-sm whitespace-nowrap hidden lg:flex transition-colors ${
-              location.pathname === `/category/${label}` 
-                ? 'text-red-600 border-b-2 border-red-600 pb-1' 
-                : 'text-white hover:text-red-600'
-            }`}
-          >
-            <Icon className="w-4 h-4 mr-2" />{t(label)}
-          </Link>
-        ))}
+    <div className="bg-black/60 backdrop-blur-sm py-4 sticky top-[120px] z-40 border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex justify-center space-x-8 overflow-x-auto scrollbar-hide">
+          {categories.map(({ icon: Icon, label }) => (
+            <Link 
+              key={label} 
+              to={`/category/${label}`} 
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all duration-300 group ${
+                location.pathname === `/category/${label}` 
+                  ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/25' 
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Icon className={`w-5 h-5 transition-all duration-300 ${
+                location.pathname === `/category/${label}` 
+                  ? 'text-white' 
+                  : 'text-gray-400 group-hover:text-red-400'
+              }`} />
+              <span className="hidden lg:inline">{t(label)}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
