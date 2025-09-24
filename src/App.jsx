@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import ProductPage from './pages/ProductPage';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
+import CategoryPage from './pages/CategoryPage';
+import Account from './pages/Account';
 
 function App() {
 
@@ -13,8 +15,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/product/:id" element={<ProductPage />} />
+        <Route path="/category/:category" element={<CategoryPage />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/account" element={<Account />} />
       </Routes>
     </div>
 

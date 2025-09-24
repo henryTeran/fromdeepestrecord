@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { categories } from '../data/categories';
 import { useLanguage } from '../contexts/LanguageContext';
+import { Link } from 'react-router-dom';
 
 const MobileMenu = ({ onClose }) => {
   const { t } = useLanguage();
@@ -21,15 +22,15 @@ const MobileMenu = ({ onClose }) => {
         {/* liens */}
         <div className="px-4 py-4 space-y-4">
           {categories.map(({ icon: Icon, label }) => (
-            <a
+            <Link
               key={label}
-              href="#"
+              to={`/category/${label}`}
               onClick={onClose}
-              className="flex items-center text-white hover:text-red-600 border-b border-gray-200 pb-2"
+              className="flex items-center text-white hover:text-red-600 border-b border-gray-200 pb-2 transition-colors"
             >
               <Icon className="w-4 h-4 mr-2" />
               {t(label)}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
