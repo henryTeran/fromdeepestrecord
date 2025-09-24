@@ -5,6 +5,7 @@ import { useWishlistStore } from '../store/wishlistStore';
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import MobileMenu from './MobileMenu';
+import { Link } from 'react-router-dom';
 
 const MobileHeader = () => {
   const { t } = useLanguage();
@@ -20,27 +21,29 @@ const MobileHeader = () => {
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Menu">
             <Menu className="w-6 h-6 text-white" />
           </button>
-          <img src={logo} alt="Logo" className="w-10 h-10" />
-          <span className="text-l font-metal text-white">FROM DEEPEST RECORD!</span>
+          <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <img src={logo} alt="Logo" className="w-10 h-10" />
+            <span className="text-l font-metal text-white">FROM DEEPEST RECORD!</span>
+          </Link>
         </div>
         <div className="flex items-center space-x-4">
-          <a href="#"><User className="w-5 h-5 text-white" /></a>
-          <a href="/wishlist" className="relative">
+          <Link to="/account"><User className="w-5 h-5 text-white" /></Link>
+          <Link to="/wishlist" className="relative">
             <Heart className="w-5 h-5 text-white" />
             {favCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1">
                 {favCount}
               </span>
             )}
-          </a>
-          <a href="/cart" className="relative">
+          </Link>
+          <Link to="/cart" className="relative">
             <ShoppingCart className="w-5 h-5 text-white" />
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1">
                 {cartCount}
               </span>
             )}
-          </a>
+          </Link>
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import { useLanguage } from "../contexts/LanguageContext";
+import { Link } from 'react-router-dom';
 
 export const Footer = () => {
     const { t } = useLanguage();
@@ -14,24 +15,24 @@ export const Footer = () => {
             <div>
               <h3 className="text-lg font-bold mb-4">{t('customerService')}</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-gray-400 hover:text-red-600 transition-colors">{t('shippingInfo')}</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-red-600 transition-colors">{t('returns')}</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-red-600 transition-colors">{t('privacyPolicy')}</a></li>
+                <li><Link to="/shipping" className="text-gray-400 hover:text-red-600 transition-colors">{t('shippingInfo')}</Link></li>
+                <li><Link to="/returns" className="text-gray-400 hover:text-red-600 transition-colors">{t('returns')}</Link></li>
+                <li><Link to="/privacy" className="text-gray-400 hover:text-red-600 transition-colors">{t('privacyPolicy')}</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-bold mb-4">{t('contact')}</h3>
               <ul className="space-y-2 text-sm">
                 <li className="text-gray-400">{t('adress')}</li>
-                <li><a href="#" className="text-gray-400 hover:text-red-600 transition-colors">support@fromdeppestrecord.com</a></li>
+                <li><Link to="/category/contact" className="text-gray-400 hover:text-red-600 transition-colors">support@fromdeppestrecord.com</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-bold mb-4">{t('followUs')}</h3>
               <div className="flex space-x-4">
-                <a href="#" className="text-gray-400 hover:text-red-600 transition-colors">Instagram</a>
-                <a href="#" className="text-gray-400 hover:text-red-600 transition-colors">Facebook</a>
-                <a href="#" className="text-gray-400 hover:text-red-600 transition-colors">Bandcamp</a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-red-600 transition-colors">Instagram</a>
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-red-600 transition-colors">Facebook</a>
+                <a href="https://bandcamp.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-red-600 transition-colors">Bandcamp</a>
               </div>
             </div>
           </div>

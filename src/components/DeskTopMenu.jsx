@@ -5,6 +5,7 @@ import { Search, User, Heart, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCartStore } from '../store/cartStore';
 import { useWishlistStore } from '../store/wishlistStore';
+import { Link } from 'react-router-dom';
 
 const DesktopMenu = () => {
   const { t } = useLanguage();
@@ -24,17 +25,17 @@ const DesktopMenu = () => {
       <Search className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
     </div>
     <div className="flex items-center space-x-4">
-      <a href="#" className="hover:text-red-600 transition-colors text-white">
+      <Link to="/account" className="hover:text-red-600 transition-colors text-white">
         <User className="w-5 h-5" />
-      </a>
-      <a href="/wishlist" className="hover:text-red-600 transition-colors flex items-center text-white">
+      </Link>
+      <Link to="/wishlist" className="hover:text-red-600 transition-colors flex items-center text-white">
         <Heart className="w-5 h-5" />
         <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">{favCount}</span>
-      </a>
-      <a href="/cart" className="hover:text-red-600 transition-colors flex items-center text-white">
+      </Link>
+      <Link to="/cart" className="hover:text-red-600 transition-colors flex items-center text-white">
         <ShoppingCart className="w-5 h-5" />
         <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">{cartCount}</span>
-      </a>
+      </Link>
         </div>
     </div>
   );
