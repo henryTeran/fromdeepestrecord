@@ -1,4 +1,4 @@
-import DesktopMenu from './DeskTopMenu';
+import DesktopMenu from './DesktopMenu';
 import MobileHeader from './MobileHeader';
 import logo from '../assets/logo.jpeg';
 import { Link } from 'react-router-dom';
@@ -14,7 +14,7 @@ const Navigation = () => {
         <div className="flex items-center justify-center space-x-4">
           <span className="hidden md:flex items-center">
             <span className="animate-pulse mr-2">🚚</span>
-            Free shipping on orders over $75
+            Free shipping on orders over CHF 75
           </span>
           <span className="hidden md:block">|</span>
           <span className="flex items-center">
