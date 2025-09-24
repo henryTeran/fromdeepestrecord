@@ -5,6 +5,7 @@ import { Footer } from '../components/Footer';
 import { useCartStore } from '../store/cartStore';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Head from '../seo/Head';
 
 const Cart = () => {
   const cart = useCartStore(state => state.cart);
@@ -18,6 +19,10 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-zinc-900 text-gray-300">
+      <Head
+        title="Shopping Cart | From Deepest Record"
+        description="Review your underground metal music selection and proceed to checkout."
+      />
       <Header />
       <Navigation />
       <CategoryNav />

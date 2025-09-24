@@ -6,7 +6,7 @@ import Navigation from '../components/Navigation';
 import CategoryNav from '../components/CategoryNav';
 import { Footer } from '../components/Footer';
 import ProductSuggestions from '../components/ProductSuggestions';
-import ProductSchema from '../seo/ProductSchema';
+import Head from '../seo/Head';
 import { useEnrich } from '../features/catalog/useEnrich';
 import { useCartStore } from '../store/cartStore';
 import { useWishlistStore } from '../store/wishlistStore';
@@ -112,7 +112,12 @@ const ProductPage = () => {
 
   return (
     <div className="min-h-screen bg-zinc-900 text-gray-300">
-      <ProductSchema product={displayProduct} />
+      <Head
+        title={`${displayProduct.artist || displayProduct.band} — ${displayProduct.title} | From Deepest Record`}
+        description={displayProduct.description || `${displayProduct.title} by ${displayProduct.artist || displayProduct.band}. Underground metal music available on From Deepest Record.`}
+        image={displayProduct.cover}
+        type="product"
+      />
       <Header />
       <Navigation />
       <CategoryNav />

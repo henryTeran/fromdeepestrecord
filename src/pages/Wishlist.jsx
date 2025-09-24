@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Navigation from '../components/Navigation';
 import { useWishlistStore } from '../store/wishlistStore';
 import { Link } from 'react-router-dom';
+import Head from '../seo/Head';
 
 const Wishlist = () => {
   const wishlist = useWishlistStore(state => state.wishlist);
@@ -11,6 +12,10 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-zinc-900 text-gray-300">
+      <Head
+        title="My Wishlist | From Deepest Record"
+        description="Your saved underground metal music favorites and wishlist items."
+      />
       <Header />
       <Navigation />
       <CategoryNav />

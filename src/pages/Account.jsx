@@ -3,12 +3,17 @@ import Navigation from '../components/Navigation';
 import CategoryNav from '../components/CategoryNav';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../contexts/LanguageContext';
+import Head from '../seo/Head';
 
 const Account = () => {
   const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-zinc-900 text-gray-300">
+      <Head
+        title="My Account | From Deepest Record"
+        description="Login to your From Deepest Record account or create a new account."
+      />
       <Header />
       <Navigation />
       <CategoryNav />
