@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { categories } from '../data/categories';
 import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import MobileMenu from './MobileMenu';
 
 const CategoryNav = () => {
   const { t } = useLanguage();
+  const location = useLocation();
 
   return (
     
@@ -17,7 +19,11 @@ const CategoryNav = () => {
           <Link 
             key={label} 
             to={`/category/${label}`} 
-            className="flex items-center text-sm text-white hover:text-red-600 whitespace-nowrap hidden lg:flex transition-colors"
+            className={`flex items-center text-sm whitespace-nowrap hidden lg:flex transition-colors ${
+              location.pathname === `/category/${label}` 
+                ? 'text-red-600 border-b-2 border-red-600 pb-1' 
+                : 'text-white hover:text-red-600'
+            }`}
           >
             <Icon className="w-4 h-4 mr-2" />{t(label)}
           </Link>
