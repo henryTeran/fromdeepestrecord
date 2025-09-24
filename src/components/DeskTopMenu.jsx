@@ -1,4 +1,3 @@
-// components/DesktopMenu.jsx
 import React from 'react';
 import { LanguageSelector } from './LanguageSelector';
 import { Search, User, Heart, ShoppingCart, X } from 'lucide-react';
@@ -20,99 +19,123 @@ const DesktopMenu = () => {
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   return (
-    <div className= "lg:flex items-center space-x-6">
-
-    <LanguageSelector />
-    <div className="relative">
-      <input 
-        type="text" 
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder={t('search')}
-        className="bg-zinc-800 text-gray-300 px-4 py-2 pl-10 pr-10 rounded-full focus:outline-none focus:ring-1 focus:ring-red-600 w-64"
+    <div className="flex items-center space-x-8">
+      <LanguageSelector />
+      
+      {/* Search Bar */}
+      <div className="relative group">
+        <input 
+          type="text" 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t('search')}
+          className="input-modern w-80 pl-12 pr-12 transition-all duration-300 focus:w-96"
         />
-      <Search className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
-      {searchQuery && (
-        <button 
-          onClick={() => setSearchQuery('')}
-          className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      )}
-    </div>
-    <div className="flex items-center space-x-4">
-      <Link to="/account" className="hover:text-red-600 transition-colors text-white">
-        <User className="w-5 h-5" />
-      </Link>
-      <Link to="/wishlist" className="hover:text-red-600 transition-colors flex items-center text-white">
-        <Heart className="w-5 h-5" />
-        {favCount > 0 && (
-          <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">{favCount}</span>
-        )}
-      </Link>
-      <div className="relative">
-        <button 
-          onClick={() => setShowCartDropdown(!showCartDropdown)}
-          className="hover:text-red-600 transition-colors flex items-center text-white"
-        >
-          <ShoppingCart className="w-5 h-5" />
-          {cartCount > 0 && (
-            <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">{cartCount}</span>
-          )}
-        </button>
-        
-        {/* Cart Dropdown */}
-        {showCartDropdown && (
-          <div className="absolute right-0 mt-2 w-80 bg-black border border-zinc-700 rounded-lg shadow-xl z-50">
-            <div className="p-4">
-              <h3 className="text-lg font-bold mb-4 text-white">Shopping Cart</h3>
-              {cart.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">Your cart is empty</p>
-              ) : (
-                <>
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {cart.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3 bg-zinc-900 p-2 rounded">
-                        <img src={item.image} alt={item.title} className="w-12 h-12 object-cover rounded" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{item.title}</p>
-                          <p className="text-xs text-gray-400">{item.band}</p>
-                          <p className="text-sm text-red-600">{item.quantity} x ${item.price.toFixed(2)}</p>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          className="text-gray-400 hover:text-red-600 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-zinc-700 mt-4 pt-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="font-bold text-white">Total: ${cartTotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Link 
-                        to="/cart" 
-                        className="flex-1 bg-zinc-800 text-white text-center py-2 rounded hover:bg-zinc-700 transition-colors"
-                        onClick={() => setShowCartDropdown(false)}
-                      >
-                        View Cart
-                      </Link>
-                      <button className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors">
-                        Checkout
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+        <Search className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-red-400 transition-colors duration-300" />
+        {searchQuery && (
+          <button 
+            onClick={() => setSearchQuery('')}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-300"
+          >
+            <X className="w-4 h-4" />
+          </button>
         )}
       </div>
+      
+      {/* Action Icons */}
+      <div className="flex items-center space-x-6">
+        <Link to="/account" className="nav-link p-2 rounded-xl hover:bg-white/10 transition-all duration-300">
+          <User className="w-6 h-6" />
+        </Link>
+        
+        <Link to="/wishlist" className="nav-link p-2 rounded-xl hover:bg-white/10 transition-all duration-300 relative group">
+          <Heart className="w-6 h-6 group-hover:text-red-400 transition-colors duration-300" />
+          {favCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-0.5 font-semibold animate-pulse-custom">
+              {favCount}
+            </span>
+          )}
+        </Link>
+        
+        <div className="relative">
+          <button 
+            onClick={() => setShowCartDropdown(!showCartDropdown)}
+            className="nav-link p-2 rounded-xl hover:bg-white/10 transition-all duration-300 relative group"
+          >
+            <ShoppingCart className="w-6 h-6 group-hover:text-red-400 transition-colors duration-300" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-0.5 font-semibold animate-pulse-custom">
+                {cartCount}
+              </span>
+            )}
+          </button>
+          
+          {/* Enhanced Cart Dropdown */}
+          {showCartDropdown && (
+            <div className="absolute right-0 mt-4 w-96 glass-dark rounded-2xl shadow-2xl shadow-black/50 z-50 border border-white/20 animate-slideInRight">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-white">Shopping Cart</h3>
+                  <button 
+                    onClick={() => setShowCartDropdown(false)}
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {cart.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ShoppingCart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Your cart is empty</p>
+                    <p className="text-sm text-gray-500 mt-2">Add some metal to your collection!</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
+                      {cart.map((item) => (
+                        <div key={item.id} className="flex items-center space-x-4 bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300">
+                          <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{item.title}</p>
+                            <p className="text-xs text-gray-400">{item.band}</p>
+                            <p className="text-sm text-red-400 font-semibold">{item.quantity} × ${item.price.toFixed(2)}</p>
+                          </div>
+                          <button
+                            onClick={() => removeFromCart(item.id)}
+                            className="text-gray-400 hover:text-red-400 transition-colors duration-300 p-1 rounded-lg hover:bg-red-500/10"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="border-t border-white/20 mt-6 pt-6">
+                      <div className="flex justify-between items-center mb-6">
+                        <span className="text-lg font-bold text-white">Total</span>
+                        <span className="text-xl font-bold gradient-text">${cartTotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex space-x-3">
+                        <Link 
+                          to="/cart" 
+                          className="flex-1 btn-secondary text-center py-3"
+                          onClick={() => setShowCartDropdown(false)}
+                        >
+                          View Cart
+                        </Link>
+                        <button className="flex-1 btn-primary">
+                          Checkout
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+      </div>
     </div>
   );
 };
