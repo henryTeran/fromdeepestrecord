@@ -73,7 +73,7 @@ const DesktopMenu = () => {
           {/* Enhanced Cart Dropdown */}
           {showCartDropdown && (
             <div className="absolute right-0 mt-4 w-96 glass-dark rounded-2xl shadow-2xl shadow-black/50 z-50 border border-white/20 animate-slideInRight">
-              <div className="p-6">
+              <div className="p-6 bg-gradient-to-b from-zinc-900/95 to-black/95 rounded-2xl">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-white">Shopping Cart</h3>
                   <button 
@@ -94,7 +94,7 @@ const DesktopMenu = () => {
                   <>
                     <div className="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
                       {cart.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-4 bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300">
+                        <div key={item.id} className="flex items-center space-x-4 bg-zinc-800/80 p-4 rounded-xl border border-zinc-700/50 hover:bg-zinc-700/80 transition-all duration-300">
                           <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-white truncate">{item.title}</p>
@@ -111,10 +111,10 @@ const DesktopMenu = () => {
                       ))}
                     </div>
                     
-                    <div className="border-t border-white/20 mt-6 pt-6">
+                    <div className="border-t border-zinc-700 mt-6 pt-6 bg-zinc-900/50 -mx-6 px-6 pb-6 rounded-b-2xl">
                       <div className="flex justify-between items-center mb-6">
                         <span className="text-lg font-bold text-white">Total</span>
-                        <span className="text-xl font-bold gradient-text">${cartTotal.toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-red-500">${cartTotal.toFixed(2)}</span>
                       </div>
                       <div className="flex space-x-3">
                         <Link 
