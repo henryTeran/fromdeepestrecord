@@ -48,5 +48,16 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+
+    match /merch/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /contactMessages/{id} {
+      allow read: if false;
+      allow create: if true;
+      allow write: if false;
+    }
   }
 }

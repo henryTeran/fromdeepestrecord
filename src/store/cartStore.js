@@ -85,12 +85,24 @@ export const useCartStore = create(persist(
           set({ cart: mergedCart });
 
           const cartRef = doc(db, 'carts', user.uid);
-          unsubscribeFirestore = onSnapshot(cartRef, (snapshot) => {
-            if (snapshot.exists()) {
-              const firestoreCart = snapshot.data().items || [];
-              set({ cart: firestoreCart });
-            }
-          });
+
+          const cartDoc = await getDoc(cartRef);
+          if (cartDoc.exists() || mergedCart.length > 0) {
+            unsubscribeFirestore = onSnapshot(
+              cartRef,
+              (snapshot) => {
+                if (snapshot.exists()) {
+                  const firestoreCart = snapshot.data().items || [];
+                  set({ cart: firestoreCart });
+                }
+              },
+              (error) => {
+                if (error.code !== 'permission-denied') {
+                  console.error('Cart snapshot error:', error);
+                }
+              }
+            );
+          }
         } else {
           currentUser = null;
         }
