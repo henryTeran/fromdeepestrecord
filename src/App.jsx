@@ -17,6 +17,7 @@ import AdminReleases from './pages/admin/Releases';
 import ReleaseForm from './pages/admin/ReleaseForm';
 import MerchForm from './pages/admin/MerchForm';
 import ContactMessages from './pages/admin/ContactMessages';
+import AdminGuard from './components/admin/AdminGuard';
 
 function App() {
   return (
@@ -37,13 +38,13 @@ function App() {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
 
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/releases" element={<AdminReleases />} />
-          <Route path="/admin/releases/new" element={<ReleaseForm />} />
-          <Route path="/admin/releases/:id/edit" element={<ReleaseForm />} />
-          <Route path="/admin/merch/new" element={<MerchForm />} />
-          <Route path="/admin/merch/:id/edit" element={<MerchForm />} />
-          <Route path="/admin/contact" element={<ContactMessages />} />
+          <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+          <Route path="/admin/releases" element={<AdminGuard><AdminReleases /></AdminGuard>} />
+          <Route path="/admin/releases/new" element={<AdminGuard><ReleaseForm /></AdminGuard>} />
+          <Route path="/admin/releases/:id/edit" element={<AdminGuard><ReleaseForm /></AdminGuard>} />
+          <Route path="/admin/merch/new" element={<AdminGuard><MerchForm /></AdminGuard>} />
+          <Route path="/admin/merch/:id/edit" element={<AdminGuard><MerchForm /></AdminGuard>} />
+          <Route path="/admin/contact" element={<AdminGuard><ContactMessages /></AdminGuard>} />
         </Routes>
       </div>
     </AuthProvider>
