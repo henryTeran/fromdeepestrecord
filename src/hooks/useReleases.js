@@ -117,8 +117,11 @@ export function useReleases(filters = {}, sortBy = 'newest', pageSize = 24, last
         setHasMore(querySnapshot.docs.length === pageSize);
         setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
       } catch (err) {
-        console.error('Error fetching releases:', err);
+        if (err.code !== 'permission-denied' && err.code !== 'not-found') {
+          console.error('Error fetching releases:', err);
+        }
         setError(err);
+        setReleases([]);
       } finally {
         setLoading(false);
       }
@@ -185,8 +188,11 @@ export function useRelease(releaseId) {
           updatedAt: data.updatedAt?.toDate()
         });
       } catch (err) {
-        console.error('Error fetching release:', err);
+        if (err.code !== 'permission-denied' && err.code !== 'not-found') {
+          console.error('Error fetching release:', err);
+        }
         setError(err);
+        setRelease(null);
       } finally {
         setLoading(false);
       }
