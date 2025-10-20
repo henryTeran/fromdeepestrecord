@@ -1,8 +1,12 @@
-import { Link } from 'react-router-dom';
-import { Package, ShoppingBag, Mail, Users, TrendingUp } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Package, ShoppingBag, Mail, Users, TrendingUp, LogOut, Home } from 'lucide-react';
 import AdminGuard from '../../components/admin/AdminGuard';
+import { useAuth } from '../../hooks/useAuth';
 
 const Dashboard = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
   const stats = [
     { label: 'Total Releases', value: '0', icon: Package, link: '/admin/releases' },
     { label: 'Merchandise', value: '0', icon: ShoppingBag, link: '/admin/merch' },
@@ -10,12 +14,46 @@ const Dashboard = () => {
     { label: 'Total Sales', value: 'CHF 0', icon: TrendingUp, link: '/admin/orders' },
   ];
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+  };
+
   return (
     <AdminGuard>
       <div className="min-h-screen bg-zinc-900 text-gray-300">
+        <div className="bg-black border-b border-zinc-800 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                to="/"
+                className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+              >
+                <Home className="w-5 h-5" />
+                <span className="hidden sm:inline">Back to Store</span>
+              </Link>
+              <span className="text-gray-600">|</span>
+              <h1 className="text-xl font-bold text-white">Admin Panel</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-400 hidden sm:inline">{user?.email}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-zinc-800 text-white px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+            <h2 className="text-3xl font-bold text-white mb-2">Dashboard</h2>
             <p className="text-gray-400">Manage your From Deepest Record store</p>
           </div>
 

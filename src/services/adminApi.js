@@ -1,6 +1,7 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { app } from '../lib/firebase';
 
-const functions = getFunctions();
+const functions = getFunctions(app, 'us-central1');
 
 export const adminApi = {
   releases: {
