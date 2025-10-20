@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    match /releases/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /artists/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /labels/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /carts/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid);
+      allow delete: if isOwner(uid);
+    }
+
+    match /orders/{id} {
+      allow read: if signedIn() &&
+        resource.data.userRef.id == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid);
+      allow delete: if false;
+    }
+
+    match /coupons/{code} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
