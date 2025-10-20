@@ -12,6 +12,8 @@ import LabelPage from './pages/LabelPage';
 import ArtistPage from './pages/ArtistPage';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import CheckoutCancel from './pages/CheckoutCancel';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminReleases from './pages/admin/Releases';
 
 function App() {
   return (
@@ -31,6 +33,9 @@ function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/releases" element={<AdminReleases />} />
         </Routes>
       </div>
     </AuthProvider>

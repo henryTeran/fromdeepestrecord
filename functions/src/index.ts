@@ -325,3 +325,5 @@ export const enrichRelease = functions.https.onCall(
     }
   }
 );
+
+export * from "./admin";
