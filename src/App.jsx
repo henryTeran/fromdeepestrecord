@@ -14,6 +14,9 @@ import CheckoutSuccess from './pages/CheckoutSuccess';
 import CheckoutCancel from './pages/CheckoutCancel';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminReleases from './pages/admin/Releases';
+import ReleaseForm from './pages/admin/ReleaseForm';
+import MerchForm from './pages/admin/MerchForm';
+import ContactMessages from './pages/admin/ContactMessages';
 
 function App() {
   return (
@@ -36,6 +39,11 @@ function App() {
 
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/releases" element={<AdminReleases />} />
+          <Route path="/admin/releases/new" element={<ReleaseForm />} />
+          <Route path="/admin/releases/:id/edit" element={<ReleaseForm />} />
+          <Route path="/admin/merch/new" element={<MerchForm />} />
+          <Route path="/admin/merch/:id/edit" element={<MerchForm />} />
+          <Route path="/admin/contact" element={<ContactMessages />} />
         </Routes>
       </div>
     </AuthProvider>
