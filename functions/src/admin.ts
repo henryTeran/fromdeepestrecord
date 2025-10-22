@@ -115,7 +115,7 @@ export const adminCreateRelease = functions.https.onCall(async (data, context) =
       throw new functions.https.HttpsError("already-exists", "Release with this slug already exists");
     }
 
-    const skus = validated.formats.map(f => f.sku);
+    const skus = validated.formats.map((f: any) => f.sku);
     if (new Set(skus).size !== skus.length) {
       throw new functions.https.HttpsError("invalid-argument", "SKUs must be unique within a release");
     }

@@ -13,7 +13,7 @@ if (!stripeSecretKey) {
 }
 
 const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2024-06-20",
+  apiVersion: "2023-10-16",
 });
 
 interface CheckoutItem {
@@ -93,13 +93,15 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
 
   if (!sig) {
     console.error("No stripe-signature header");
-    return res.status(400).send("Missing stripe-signature header");
+    res.status(400).send("Missing stripe-signature header");
+    return;
   }
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
     console.error("STRIPE_WEBHOOK_SECRET not configured");
-    return res.status(500).send("Webhook secret not configured");
+    res.status(500).send("Webhook secret not configured");
+    return;
   }
 
   let event: Stripe.Event;
@@ -112,7 +114,8 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
     );
   } catch (err: any) {
     console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+    return;
   }
 
   console.log(`Received event: ${event.type}`);
@@ -124,7 +127,8 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
 
     if (!uid || !itemsJson) {
       console.error("Missing uid or items in session metadata");
-      return res.status(400).send("Invalid session metadata");
+      res.status(400).send("Invalid session metadata");
+      return;
     }
 
     try {
@@ -193,7 +197,8 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
       console.log(`Order ${orderId} created successfully for user ${uid}`);
     } catch (error: any) {
       console.error("Error processing checkout session:", error);
-      return res.status(500).send(`Error: ${error.message}`);
+      res.status(500).send(`Error: ${error.message}`);
+      return;
     }
   }
 
@@ -217,7 +222,7 @@ export const enrichRelease = functions.https.onCall(
       );
     }
 
-    const { releaseId, artist, title, barcode, catno } = data;
+    const { releaseId, artist, title, barcode } = data;
 
     if (!releaseId) {
       throw new functions.https.HttpsError(
