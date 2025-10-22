@@ -20,7 +20,9 @@
     "firebase-functions": "^5.0.0",
     "stripe": "^14.0.0",
     "uuid": "^9.0.0",
-    "cross-fetch": "^4.0.0"
+    "cross-fetch": "^4.0.0",
+    "zod": "^3.22.4",
+    "@google-cloud/storage": "^7.7.0"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.0",
