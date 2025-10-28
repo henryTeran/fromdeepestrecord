@@ -47,6 +47,10 @@ const cross_fetch_1 = __importDefault(require("cross-fetch"));
 const uuid_1 = require("uuid");
 admin.initializeApp();
 const db = admin.firestore();
+if (process.env.FUNCTIONS_EMULATOR === "true") {
+    // charge le .env en local quand tu utilises l’émulateur
+    require("dotenv").config();
+}
 const stripeSecretKey = process.env.STRIPE_SK;
 if (!stripeSecretKey) {
     throw new Error("STRIPE_SK environment variable is required");

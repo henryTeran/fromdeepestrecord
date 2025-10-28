@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getStorage, connectStorageEmulator } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FB_API_KEY,
@@ -14,11 +16,13 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const fx = getFunctions(app, "us-central1");
 
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-    console.warn('Persistence failed: Multiple tabs open');
-  } else if (err.code === 'unimplemented') {
-    console.warn('Persistence not available in this browser');
-  }
-});
+if (import.meta.env.DEV) {
+  // IMPORTANT : utiliser l’IP 127.0.0.1 (et pas localhost) pour éviter certains soucis de cookies/CORS
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectFunctionsEmulator(fx, "127.0.0.1", 5001);
+  connectAuthEmulator(auth, "http://127.0.0.1:9099");      // si tu lances Auth
+  connectStorageEmulator(storage, "127.0.0.1", 9199);      // si tu lances Storage
+}
