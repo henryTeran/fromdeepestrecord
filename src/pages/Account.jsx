@@ -103,8 +103,8 @@ const Account = () => {
     return (
       <div className="min-h-screen bg-zinc-900 text-gray-300">
         <Head
-          title="My Account | From Deepest Record"
-          description="Manage your From Deepest Record account."
+          title="My Account | From Deepest Records"
+          description="Manage your From Deepest Records account."
         />
         <Header />
         <Navigation />

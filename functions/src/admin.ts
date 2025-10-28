@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { z } from "zod";
+import { ZodError } from "zod";
 import { Storage } from "@google-cloud/storage";
 import { applyCors } from "./cors";
 
@@ -140,11 +141,11 @@ export const adminCreateRelease = functions.https.onCall(async (data, context) =
     const docRef = await db.collection("releases").add(releaseData);
 
     return { id: docRef.id, slug };
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      throw new functions.https.HttpsError("invalid-argument", error.errors[0].message);
-    }
-    throw new functions.https.HttpsError("internal", error.message);
+  } catch (error) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      firstZodIssueMessage(error, "Invalid request payload")
+    );
   }
 });
 
@@ -253,12 +254,8 @@ export const adminCreateMerch = functions.region("us-central1").https.onRequest(
     const docRef = await db.collection("merch").add(merchData);
 
     res.json({ id: docRef.id, slug });
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors[0].message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
+  } catch (error) {
+      res.status(400).json({ error: firstZodIssueMessage(error, "Invalid request payload") });
   }
 });
 
@@ -385,12 +382,8 @@ export const submitContact = functions.region("us-central1").https.onRequest(asy
     const docRef = await db.collection("contactMessages").add(contactData);
 
     res.json({ id: docRef.id, success: true });
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors[0].message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
+  } catch (error) {
+    res.status(400).json({ error: firstZodIssueMessage(error, "Invalid request payload") });
   }
 });
 
@@ -425,3 +418,12 @@ export const adminUpdateContactStatus = functions.https.onCall(async (data, cont
     throw new functions.https.HttpsError("internal", error.message);
   }
 });
+
+
+function firstZodIssueMessage(err: unknown, fallback = "Invalid input") {
+  if (err instanceof ZodError && Array.isArray(err.issues) && err.issues[0]?.message) {
+    return err.issues[0].message;
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return fallback;
+}

@@ -43,7 +43,7 @@ const MobileMenu = ({ onClose }) => {
         {/* Footer */}
         <div className="px-6 py-6 border-t border-white/10 mt-auto">
           <p className="text-gray-400 text-sm text-center">
-            © 2025 From Deepest Record
+            © 2025 From Deepest Records
           </p>
         </div>
       </div>

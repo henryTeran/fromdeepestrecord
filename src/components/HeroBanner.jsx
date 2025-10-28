@@ -42,7 +42,7 @@ const HeroBanner = () => {
           <div className="mb-8 relative">
             <img 
               src={logo} 
-              alt="From Deepest Record" 
+              alt="From Deepest Records" 
               className="w-32 h-32 mx-auto rounded-2xl shadow-2xl shadow-red-500/20 animate-glow"
             />
           </div>

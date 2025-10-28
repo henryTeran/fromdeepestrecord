@@ -16,7 +16,7 @@ export const Footer = () => {
               <img src={logo} alt="Logo" className="w-12 h-12 rounded-xl group-hover:scale-110 transition-transform duration-300" />
               <div>
                 <span className="text-xl font-bold text-white group-hover:text-red-400 transition-colors duration-300">
-                  FROM DEEPEST RECORD
+                  FROM DEEPEST RECORDS
                 </span>
               </div>
             </Link>
