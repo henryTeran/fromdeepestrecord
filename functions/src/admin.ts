@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import { z } from "zod";
 import { ZodError } from "zod";
 import { Storage } from "@google-cloud/storage";
-import { applyCors } from "./cors";
 
 const db = admin.firestore();
 const storage = new Storage();
