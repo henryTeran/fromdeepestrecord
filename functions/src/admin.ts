@@ -331,7 +331,7 @@ export const getSignedUploadUrl = functions.region("us-central1").https.onCall(a
   }
 
   try {
-    const bucketName = process.env.FIREBASE_STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT}.appspot.com`;
+    const bucketName = process.env.VITE_STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT}.appspot.com`;
     const bucket = storage.bucket(bucketName);
     const file = bucket.file(path);
 
