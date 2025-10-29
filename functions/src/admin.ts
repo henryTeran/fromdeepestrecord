@@ -102,7 +102,7 @@ const ContactSchema = z.object({
   message: z.string().min(10).max(5000),
 });
 
-export const adminCreateRelease = functions.https.onCall(async (data, context) => {
+export const adminCreateRelease = functions.region("us-central1").https.onCall(async (data, context) => {
   requireAdmin(context);
 
   try {
@@ -149,7 +149,7 @@ export const adminCreateRelease = functions.https.onCall(async (data, context) =
   }
 });
 
-export const adminUpdateRelease = functions.https.onCall(async (data, context) => {
+export const adminUpdateRelease = functions.region("us-central1").https.onCall(async (data, context) => {
   requireAdmin(context);
 
   const { id, ...updateData } = data;
@@ -194,7 +194,7 @@ export const adminUpdateRelease = functions.https.onCall(async (data, context) =
   }
 });
 
-export const adminDeleteRelease = functions.https.onCall(async (data, context) => {
+export const adminDeleteRelease = functions.region("us-central1").https.onCall(async (data, context) => {
   requireAdmin(context);
 
   const { id, hard = false } = data;
@@ -227,10 +227,8 @@ export const adminDeleteRelease = functions.https.onCall(async (data, context) =
   }
 });
 
-export const adminCreateMerch = functions.region("us-central1").https.onRequest(async (req, res) => {
-  if (applyCors(req, res)) return;
-
-  const data = req.body;
+export const adminCreateMerch = functions.region("us-central1").https.onCall(async (data, context) => {
+  requireAdmin(context);
 
   try {
     const validated = MerchSchema.parse(data);
@@ -239,8 +237,7 @@ export const adminCreateMerch = functions.region("us-central1").https.onRequest(
 
     const existingQuery = await db.collection("merch").where("slug", "==", slug).limit(1).get();
     if (!existingQuery.empty) {
-      res.status(409).json({ error: "Merch with this slug already exists" });
-      return;
+      throw new functions.https.HttpsError("already-exists", "Merch with this slug already exists");
     }
 
     const merchData = {
@@ -254,19 +251,22 @@ export const adminCreateMerch = functions.region("us-central1").https.onRequest(
     const docRef = await db.collection("merch").add(merchData);
 
     res.json({ id: docRef.id, slug });
-  } catch (error) {
-      res.status(400).json({ error: firstZodIssueMessage(error, "Invalid request payload") });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.errors[0].message });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
   }
 });
 
-export const adminUpdateMerch = functions.region("us-central1").https.onRequest(async (req, res) => {
-  if (applyCors(req, res)) return;
+export const adminUpdateMerch = functions.region("us-central1").https.onCall(async (data, context) => {
+  requireAdmin(context);
 
-  const { id, ...updateData } = req.body;
+  const { id, ...updateData } = data;
 
   if (!id) {
-    res.status(400).json({ error: "Merch ID is required" });
-    return;
+    throw new functions.https.HttpsError("invalid-argument", "Merch ID is required");
   }
 
   try {
@@ -274,8 +274,7 @@ export const adminUpdateMerch = functions.region("us-central1").https.onRequest(
     const merchDoc = await merchRef.get();
 
     if (!merchDoc.exists) {
-      res.status(404).json({ error: "Merch not found" });
-      return;
+      throw new functions.https.HttpsError("not-found", "Merch not found");
     }
 
     await merchRef.update({
@@ -283,20 +282,19 @@ export const adminUpdateMerch = functions.region("us-central1").https.onRequest(
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    res.json({ success: true, id });
+    return { success: true, id };
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    throw new functions.https.HttpsError("internal", error.message);
   }
 });
 
-export const adminDeleteMerch = functions.region("us-central1").https.onRequest(async (req, res) => {
-  if (applyCors(req, res)) return;
+export const adminDeleteMerch = functions.region("us-central1").https.onCall(async (data, context) => {
+  requireAdmin(context);
 
-  const { id, hard = false } = req.body;
+  const { id, hard = false } = data;
 
   if (!id) {
-    res.status(400).json({ error: "Merch ID is required" });
-    return;
+    throw new functions.https.HttpsError("invalid-argument", "Merch ID is required");
   }
 
   try {
@@ -304,8 +302,7 @@ export const adminDeleteMerch = functions.region("us-central1").https.onRequest(
     const merchDoc = await merchRef.get();
 
     if (!merchDoc.exists) {
-      res.status(404).json({ error: "Merch not found" });
-      return;
+      throw new functions.https.HttpsError("not-found", "Merch not found");
     }
 
     if (hard) {
@@ -318,25 +315,19 @@ export const adminDeleteMerch = functions.region("us-central1").https.onRequest(
       });
     }
 
-    res.json({ success: true, id });
+    return { success: true, id };
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    throw new functions.https.HttpsError("internal", error.message);
   }
 });
 
-export const getSignedUploadUrl = functions.region("us-central1").https.onRequest(async (req, res) => {
-  if (applyCors(req, res)) return;
+export const getSignedUploadUrl = functions.region("us-central1").https.onCall(async (data, context) => {
+  requireAdmin(context);
 
-  const { path, contentType } = req.body;
-
-  if (!req.headers.authorization) {
-    res.status(401).json({ error: "Authentication required" });
-    return;
-  }
+  const { path, contentType } = data;
 
   if (!path || !contentType) {
-    res.status(400).json({ error: "path and contentType are required" });
-    return;
+    throw new functions.https.HttpsError("invalid-argument", "path and contentType are required");
   }
 
   try {
@@ -353,41 +344,40 @@ export const getSignedUploadUrl = functions.region("us-central1").https.onReques
 
     const publicUrl = `https://storage.googleapis.com/${bucketName}/${path}`;
 
-    res.json({ uploadUrl, publicUrl });
+    return { uploadUrl, publicUrl };
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    throw new functions.https.HttpsError("internal", error.message);
   }
 });
 
-export const submitContact = functions.region("us-central1").https.onRequest(async (req, res) => {
-  if (applyCors(req, res)) return;
-
-  const data = req.body;
+export const submitContact = functions.region("us-central1").https.onCall(async (data, context) => {
   try {
     const validated = ContactSchema.parse(data);
 
     const simpleSpamCheck = validated.message.match(/https?:\/\//g);
     if (simpleSpamCheck && simpleSpamCheck.length > 2) {
-      res.status(400).json({ error: "Message contains too many links" });
-      return;
+      throw new functions.https.HttpsError("invalid-argument", "Message contains too many links");
     }
 
     const contactData = {
       ...validated,
       status: "new",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      ip: req.ip || "unknown",
     };
 
     const docRef = await db.collection("contactMessages").add(contactData);
 
     res.json({ id: docRef.id, success: true });
-  } catch (error) {
-    res.status(400).json({ error: firstZodIssueMessage(error, "Invalid request payload") });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: error.errors[0].message });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
   }
 });
 
-export const adminUpdateContactStatus = functions.https.onCall(async (data, context) => {
+export const adminUpdateContactStatus = functions.region("us-central1").https.onCall(async (data, context) => {
   requireAdmin(context);
 
   const { id, status } = data;
