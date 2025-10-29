@@ -38,7 +38,6 @@ const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const zod_1 = require("zod");
 const storage_1 = require("@google-cloud/storage");
-const cors_1 = require("./cors");
 const db = admin.firestore();
 const storage = new storage_1.Storage();
 const ADMIN_EMAILS = (process.env.VITE_ADMIN_EMAILS || "").split(",").filter(Boolean);
@@ -125,7 +124,7 @@ const ContactSchema = zod_1.z.object({
     subject: zod_1.z.string().min(1).max(120),
     message: zod_1.z.string().min(10).max(5000),
 });
-exports.adminCreateRelease = functions.https.onCall(async (data, context) => {
+exports.adminCreateRelease = functions.region("us-central1").https.onCall(async (data, context) => {
     requireAdmin(context);
     try {
         const validated = ReleaseSchema.parse(data);
@@ -161,7 +160,7 @@ exports.adminCreateRelease = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.adminUpdateRelease = functions.https.onCall(async (data, context) => {
+exports.adminUpdateRelease = functions.region("us-central1").https.onCall(async (data, context) => {
     requireAdmin(context);
     const { id, ...updateData } = data;
     if (!id) {
@@ -196,7 +195,7 @@ exports.adminUpdateRelease = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.adminDeleteRelease = functions.https.onCall(async (data, context) => {
+exports.adminDeleteRelease = functions.region("us-central1").https.onCall(async (data, context) => {
     requireAdmin(context);
     const { id, hard = false } = data;
     if (!id) {
@@ -224,17 +223,14 @@ exports.adminDeleteRelease = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.adminCreateMerch = functions.region("us-central1").https.onRequest(async (req, res) => {
-    if ((0, cors_1.applyCors)(req, res))
-        return;
-    const data = req.body;
+exports.adminCreateMerch = functions.region("us-central1").https.onCall(async (data, context) => {
+    requireAdmin(context);
     try {
         const validated = MerchSchema.parse(data);
         const slug = validated.slug || slugify(validated.title);
         const existingQuery = await db.collection("merch").where("slug", "==", slug).limit(1).get();
         if (!existingQuery.empty) {
-            res.status(409).json({ error: "Merch with this slug already exists" });
-            return;
+            throw new functions.https.HttpsError("already-exists", "Merch with this slug already exists");
         }
         const merchData = {
             ...validated,
@@ -244,56 +240,48 @@ exports.adminCreateMerch = functions.region("us-central1").https.onRequest(async
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
         const docRef = await db.collection("merch").add(merchData);
-        res.json({ id: docRef.id, slug });
+        return { id: docRef.id, slug };
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
-            res.status(400).json({ error: error.errors[0].message });
+            throw new functions.https.HttpsError("invalid-argument", error.errors[0].message);
         }
-        else {
-            res.status(500).json({ error: error.message });
-        }
+        throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.adminUpdateMerch = functions.region("us-central1").https.onRequest(async (req, res) => {
-    if ((0, cors_1.applyCors)(req, res))
-        return;
-    const { id, ...updateData } = req.body;
+exports.adminUpdateMerch = functions.region("us-central1").https.onCall(async (data, context) => {
+    requireAdmin(context);
+    const { id, ...updateData } = data;
     if (!id) {
-        res.status(400).json({ error: "Merch ID is required" });
-        return;
+        throw new functions.https.HttpsError("invalid-argument", "Merch ID is required");
     }
     try {
         const merchRef = db.collection("merch").doc(id);
         const merchDoc = await merchRef.get();
         if (!merchDoc.exists) {
-            res.status(404).json({ error: "Merch not found" });
-            return;
+            throw new functions.https.HttpsError("not-found", "Merch not found");
         }
         await merchRef.update({
             ...updateData,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
-        res.json({ success: true, id });
+        return { success: true, id };
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.adminDeleteMerch = functions.region("us-central1").https.onRequest(async (req, res) => {
-    if ((0, cors_1.applyCors)(req, res))
-        return;
-    const { id, hard = false } = req.body;
+exports.adminDeleteMerch = functions.region("us-central1").https.onCall(async (data, context) => {
+    requireAdmin(context);
+    const { id, hard = false } = data;
     if (!id) {
-        res.status(400).json({ error: "Merch ID is required" });
-        return;
+        throw new functions.https.HttpsError("invalid-argument", "Merch ID is required");
     }
     try {
         const merchRef = db.collection("merch").doc(id);
         const merchDoc = await merchRef.get();
         if (!merchDoc.exists) {
-            res.status(404).json({ error: "Merch not found" });
-            return;
+            throw new functions.https.HttpsError("not-found", "Merch not found");
         }
         if (hard) {
             await merchRef.delete();
@@ -305,23 +293,17 @@ exports.adminDeleteMerch = functions.region("us-central1").https.onRequest(async
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
         }
-        res.json({ success: true, id });
+        return { success: true, id };
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.getSignedUploadUrl = functions.region("us-central1").https.onRequest(async (req, res) => {
-    if ((0, cors_1.applyCors)(req, res))
-        return;
-    const { path, contentType } = req.body;
-    if (!req.headers.authorization) {
-        res.status(401).json({ error: "Authentication required" });
-        return;
-    }
+exports.getSignedUploadUrl = functions.region("us-central1").https.onCall(async (data, context) => {
+    requireAdmin(context);
+    const { path, contentType } = data;
     if (!path || !contentType) {
-        res.status(400).json({ error: "path and contentType are required" });
-        return;
+        throw new functions.https.HttpsError("invalid-argument", "path and contentType are required");
     }
     try {
         const bucketName = process.env.FIREBASE_STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT}.appspot.com`;
@@ -334,42 +316,35 @@ exports.getSignedUploadUrl = functions.region("us-central1").https.onRequest(asy
             contentType,
         });
         const publicUrl = `https://storage.googleapis.com/${bucketName}/${path}`;
-        res.json({ uploadUrl, publicUrl });
+        return { uploadUrl, publicUrl };
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.submitContact = functions.region("us-central1").https.onRequest(async (req, res) => {
-    if ((0, cors_1.applyCors)(req, res))
-        return;
-    const data = req.body;
+exports.submitContact = functions.region("us-central1").https.onCall(async (data, context) => {
     try {
         const validated = ContactSchema.parse(data);
         const simpleSpamCheck = validated.message.match(/https?:\/\//g);
         if (simpleSpamCheck && simpleSpamCheck.length > 2) {
-            res.status(400).json({ error: "Message contains too many links" });
-            return;
+            throw new functions.https.HttpsError("invalid-argument", "Message contains too many links");
         }
         const contactData = {
             ...validated,
             status: "new",
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            ip: req.ip || "unknown",
         };
         const docRef = await db.collection("contactMessages").add(contactData);
-        res.json({ id: docRef.id, success: true });
+        return { id: docRef.id, success: true };
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
-            res.status(400).json({ error: error.errors[0].message });
+            throw new functions.https.HttpsError("invalid-argument", error.errors[0].message);
         }
-        else {
-            res.status(500).json({ error: error.message });
-        }
+        throw new functions.https.HttpsError("internal", error.message);
     }
 });
-exports.adminUpdateContactStatus = functions.https.onCall(async (data, context) => {
+exports.adminUpdateContactStatus = functions.region("us-central1").https.onCall(async (data, context) => {
     requireAdmin(context);
     const { id, status } = data;
     if (!id || !status) {
