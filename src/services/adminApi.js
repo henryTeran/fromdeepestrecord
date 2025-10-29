@@ -1,33 +1,24 @@
-const BASE = import.meta.env.DEV
-  ? "http://127.0.0.1:5001/deepestrecords/us-central1"
-  : "https://us-central1-deepestrecords.cloudfunctions.net";
+import { httpsCallable } from 'firebase/functions';
+import { fx } from '../lib/firebase';
 
-async function api(path, data, init) {
-  const res = await fetch(`${BASE}/${path}`, {
-    method: init?.method || "POST",
-    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
-    body: data ? JSON.stringify(data) : undefined,
-    ...init,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
-  }
-  return res.json();
-}
+const callFunction = async (name, data) => {
+  const fn = httpsCallable(fx, name);
+  const result = await fn(data);
+  return result.data;
+};
 
 export const adminApi = {
   releases: {
     create: async (data) => {
-      return api("adminCreateRelease", data);
+      return callFunction('adminCreateRelease', data);
     },
 
     update: async (id, data) => {
-      return api("adminUpdateRelease", { id, ...data });
+      return callFunction('adminUpdateRelease', { id, ...data });
     },
 
     delete: async (id, hard = false) => {
-      return api("adminDeleteRelease", { id, hard });
+      return callFunction('adminDeleteRelease', { id, hard });
     },
 
     list: async (filters = {}) => {
@@ -37,15 +28,15 @@ export const adminApi = {
 
   merch: {
     create: async (data) => {
-      return api("adminCreateMerch", data);
+      return callFunction('adminCreateMerch', data);
     },
 
     update: async (id, data) => {
-      return api("adminUpdateMerch", { id, ...data });
+      return callFunction('adminUpdateMerch', { id, ...data });
     },
 
     delete: async (id, hard = false) => {
-      return api("adminDeleteMerch", { id, hard });
+      return callFunction('adminDeleteMerch', { id, hard });
     },
 
     list: async (filters = {}) => {
@@ -55,11 +46,11 @@ export const adminApi = {
 
   contact: {
     submit: async (data) => {
-      return api("submitContact", data);
+      return callFunction('submitContact', data);
     },
 
     updateStatus: async (id, status) => {
-      return api("adminUpdateContactStatus", { id, status });
+      return callFunction('adminUpdateContactStatus', { id, status });
     },
 
     list: async (filters = {}) => {
@@ -69,7 +60,7 @@ export const adminApi = {
 
   storage: {
     getUploadUrl: async (path, contentType) => {
-      return api("getSignedUploadUrl", { path, contentType });
+      return callFunction('getSignedUploadUrl', { path, contentType });
     },
 
     uploadFile: async (file, path) => {
