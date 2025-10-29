@@ -6,9 +6,10 @@ import { getStorage, connectStorageEmulator } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY || "dev-api-key",
-  authDomain: "deepestrecords.firebaseapp.com",
-  projectId: "deepestrecords",
-  storageBucket: "deepestrecords.appspot.com",
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN || "deepestrecords.firebaseapp.com",
+  projectId: import.meta.env.VITE_PROJECT_ID || "deepestrecords",
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET || "deepestrecords.appspot.com",
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID || "dev-app-id",
 };
 
