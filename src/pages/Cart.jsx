@@ -32,14 +32,22 @@ const Cart = () => {
       const functions = getFunctions();
       const createCheckout = httpsCallable(functions, 'createCheckoutSession');
 
-      const items = cart.map(item => ({
-        releaseId: item.id,
-        sku: item.sku || 'default',
-        qty: item.quantity,
-        stripePriceId: item.stripePriceId,
-        unitPrice: item.price,
-        title: item.title,
-      }));
+      const items = cart.map(item => {
+        const base = {
+          releaseId: item.id,
+          sku: item.sku || 'default',
+          qty: item.quantity,
+          unitPrice: item.price,
+          title: item.title,
+        };
+
+        // Only include stripePriceId when it's a non-empty string
+        if (item.stripePriceId && typeof item.stripePriceId === 'string' && item.stripePriceId.trim() !== '') {
+          return { ...base, stripePriceId: item.stripePriceId };
+        }
+
+        return base;
+      });
 
       const result = await createCheckout({
         items,

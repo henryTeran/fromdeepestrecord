@@ -4,23 +4,24 @@ import Stripe from "stripe";
 import fetch from "cross-fetch";
 import { v4 as uuidv4 } from "uuid";
 
+// Load .env only in emulator (before admin init)
+if (process.env.FUNCTIONS_EMULATOR === "true") {
+  require("dotenv").config();
+}
 
 admin.initializeApp();
 const db = admin.firestore();
 
-if (process.env.FUNCTIONS_EMULATOR === "true") {
-  // charge le .env en local quand tu utilises l’émulateur
-}
-require("dotenv").config();
-
 const stripeSecretKey = process.env.STRIPE_SK;
-if (!stripeSecretKey) {
-  throw new Error("STRIPE_SK environment variable is required");
+const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
+
+if (!stripeSecretKey && !isEmulator) {
+  console.warn("STRIPE_SK is not set at deployment time. It will be injected at runtime from environment variables.");
 }
 
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2023-10-16",
-});
+const stripe = stripeSecretKey
+  ? new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" })
+  : undefined as unknown as Stripe;
 
 interface CheckoutItem {
   releaseId: string;
@@ -56,10 +57,58 @@ export const createCheckoutSession = functions.https.onCall(
       );
     }
 
-    const lineItems = items.map((item) => ({
-      price: item.stripePriceId,
-      quantity: item.qty,
-    }));
+    // Validate items structure to avoid sending empty values to Stripe
+    for (const it of items) {
+      if (!it) {
+        throw new functions.https.HttpsError("invalid-argument", "Invalid item in items array");
+      }
+
+      if (!it.qty || typeof it.qty !== "number" || it.qty <= 0) {
+        throw new functions.https.HttpsError("invalid-argument", "Each item must have a quantity > 0");
+      }
+
+      if (typeof it.unitPrice !== "number" || it.unitPrice <= 0) {
+        throw new functions.https.HttpsError("invalid-argument", "Each item must have a positive unitPrice");
+      }
+    }
+
+    if (!successUrl || !cancelUrl) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "successUrl and cancelUrl are required"
+      );
+    }
+
+    if (!stripe) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Stripe is not configured on the server. Set STRIPE_SK environment variable."
+      );
+    }
+
+    const lineItems = items.map((item) => {
+      const hasPriceId = typeof item.stripePriceId === "string" && item.stripePriceId.trim() !== "";
+
+      if (hasPriceId) {
+        return {
+          price: item.stripePriceId,
+          quantity: item.qty,
+        };
+      }
+
+      // Fallback: build price_data dynamically when no Stripe Price ID is provided
+      // This avoids passing an empty string to Stripe which causes a 500 from the API.
+      return {
+        price_data: {
+          currency: (currency || "CHF").toLowerCase(),
+          product_data: {
+            name: item.title || `Item ${item.sku || item.releaseId}`,
+          },
+          unit_amount: Math.round((item.unitPrice || 0) * 100),
+        },
+        quantity: item.qty,
+      };
+    });
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -85,7 +134,11 @@ export const createCheckoutSession = functions.https.onCall(
 
       return { id: session.id, url: session.url };
     } catch (error: any) {
-      console.error("Error creating checkout session:", error);
+      console.error("Error creating checkout session:", {
+        message: error?.message,
+        stack: error?.stack,
+        items: items,
+      });
       throw new functions.https.HttpsError(
         "internal",
         `Failed to create checkout session: ${error.message}`
@@ -139,6 +192,11 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
 
     try {
       const items = JSON.parse(itemsJson);
+      if (!Array.isArray(items) || items.length === 0) {
+        console.error("No items found in session metadata");
+        res.status(400).send("Invalid session metadata: no items");
+        return;
+      }
       const orderId = uuidv4();
 
       const subtotal = items.reduce(
@@ -149,7 +207,7 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
       const orderData = {
         userRef: db.collection("users").doc(uid),
         items: items.map((item: any) => ({
-          releaseRef: db.collection("releases").doc(item.releaseId),
+          releaseRef: item.releaseId ? db.collection("releases").doc(item.releaseId) : null,
           sku: item.sku,
           qty: item.qty,
           unitPrice: item.unitPrice,
@@ -180,15 +238,18 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
       await db.collection("orders").doc(orderId).set(orderData);
 
       for (const item of items) {
+        if (!item.releaseId) {
+          console.warn("Skipping stock update: missing releaseId for item", item);
+          continue;
+        }
+
         const releaseRef = db.collection("releases").doc(item.releaseId);
         const releaseDoc = await releaseRef.get();
 
         if (releaseDoc.exists) {
           const release = releaseDoc.data();
           const formats = release?.formats || [];
-          const formatIndex = formats.findIndex(
-            (f: any) => f.sku === item.sku
-          );
+          const formatIndex = formats.findIndex((f: any) => f.sku === item.sku);
 
           if (formatIndex !== -1 && formats[formatIndex].stock >= item.qty) {
             formats[formatIndex].stock -= item.qty;

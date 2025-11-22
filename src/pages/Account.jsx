@@ -235,6 +235,7 @@ const Account = () => {
                 onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 required
                 className="w-full bg-zinc-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-red-600"
+                autoComplete="current-password"
               />
               <button
                 type="submit"
@@ -287,6 +288,7 @@ const Account = () => {
                 required
                 minLength={6}
                 className="w-full bg-zinc-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-red-600"
+                autoComplete="new-password"
               />
               <button
                 type="submit"

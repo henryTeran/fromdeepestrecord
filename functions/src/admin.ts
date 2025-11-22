@@ -342,14 +342,24 @@ export const getSignedUploadUrl = functions.region("us-central1").https.onCall(a
   }
 
   try {
-    const bucketName = process.env.VITE_FB_STORAGE || `${process.env.GCLOUD_PROJECT}.appspot.com`;
+    const bucketName =
+      process.env.VITE_FB_STORAGE ||
+      (process.env.GCLOUD_PROJECT ? `${process.env.GCLOUD_PROJECT}.appspot.com` : undefined) ||
+      (process.env.GCP_PROJECT ? `${process.env.GCP_PROJECT}.appspot.com` : undefined);
+
+    if (!bucketName) {
+      console.error("No bucket configured for signed URL. Check VITE_FB_STORAGE/GCLOUD_PROJECT/GCP_PROJECT env vars");
+      throw new Error("Storage bucket not configured");
+    }
+
+    console.log("Generating signed upload url", { bucketName, path, contentType });
     const bucket = storage.bucket(bucketName);
     const file = bucket.file(path);
 
     const [uploadUrl] = await file.getSignedUrl({
       version: "v4",
       action: "write",
-      expires: Date.now() + 15 * 60 * 1000,
+      expires: new Date(Date.now() + 15 * 60 * 1000),
       contentType,
     });
 
