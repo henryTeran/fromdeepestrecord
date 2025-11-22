@@ -9,6 +9,7 @@ const storage = new Storage();
 
 const ADMIN_EMAILS = (process.env.VITE_ADMIN_EMAILS || "").split(",").filter(Boolean);
 
+console.log(ADMIN_EMAILS);
 const requireAdmin = (context: functions.https.CallableContext) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Authentication required");
@@ -226,38 +227,49 @@ export const adminDeleteRelease = functions.region("us-central1").https.onCall(a
   }
 });
 
-export const adminCreateMerch = functions.region("us-central1").https.onCall(async (data, context) => {
-  requireAdmin(context);
+export const adminCreateMerch = functions
+  .region("us-central1")
+  .https.onCall(async (data, context) => {
+    requireAdmin(context);
 
-  try {
-    const validated = MerchSchema.parse(data);
+    try {
+      const validated = MerchSchema.parse(data);
 
-    const slug = validated.slug || slugify(validated.title);
+      const slug = validated.slug || slugify(validated.title);
 
-    const existingQuery = await db.collection("merch").where("slug", "==", slug).limit(1).get();
-    if (!existingQuery.empty) {
-      throw new functions.https.HttpsError("already-exists", "Merch with this slug already exists");
+      const existingQuery = await db
+        .collection("merch")
+        .where("slug", "==", slug)
+        .limit(1)
+        .get();
+
+      if (!existingQuery.empty) {
+        throw new functions.https.HttpsError(
+          "already-exists",
+          "Merch with this slug already exists"
+        );
+      }
+
+      const merchData = {
+        ...validated,
+        slug,
+        status: "active",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      const docRef = await db.collection("merch").add(merchData);
+
+      // ✅ onCall doit retourner un objet
+      return { id: docRef.id, slug };
+    } catch (error) {
+      // ✅ ZodError → utiliser issues, pas errors
+      const message = firstZodIssueMessage(error, "Invalid request payload");
+      // ✅ onCall → on lance un HttpsError
+      throw new functions.https.HttpsError("invalid-argument", message);
     }
+  });
 
-    const merchData = {
-      ...validated,
-      slug,
-      status: "active",
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    const docRef = await db.collection("merch").add(merchData);
-
-    res.json({ id: docRef.id, slug });
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors[0].message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
 
 export const adminUpdateMerch = functions.region("us-central1").https.onCall(async (data, context) => {
   requireAdmin(context);
@@ -330,7 +342,7 @@ export const getSignedUploadUrl = functions.region("us-central1").https.onCall(a
   }
 
   try {
-    const bucketName = process.env.VITE_STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT}.appspot.com`;
+    const bucketName = process.env.VITE_FB_STORAGE || `${process.env.GCLOUD_PROJECT}.appspot.com`;
     const bucket = storage.bucket(bucketName);
     const file = bucket.file(path);
 
@@ -349,32 +361,43 @@ export const getSignedUploadUrl = functions.region("us-central1").https.onCall(a
   }
 });
 
-export const submitContact = functions.region("us-central1").https.onCall(async (data, context) => {
-  try {
-    const validated = ContactSchema.parse(data);
+export const submitContact = functions
+  .region("us-central1")
+  .https.onCall(async (data, context) => {
+    try {
+      const validated = ContactSchema.parse(data);
 
-    const simpleSpamCheck = validated.message.match(/https?:\/\//g);
-    if (simpleSpamCheck && simpleSpamCheck.length > 2) {
-      throw new functions.https.HttpsError("invalid-argument", "Message contains too many links");
+      const links = validated.message.match(/https?:\/\//g);
+      if (links && links.length > 2) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "Message contains too many links"
+        );
+      }
+
+      const contactData = {
+        ...validated,
+        status: "new",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      const docRef = await db.collection("contactMessages").add(contactData);
+
+      // ✅ onCall → return, pas res.json
+      return { id: docRef.id, success: true };
+    } catch (error) {
+      const message = firstZodIssueMessage(error, "Failed to submit contact");
+      // Si c’est une erreur de validation, invalid-argument ; sinon internal
+      if (error instanceof ZodError) {
+        throw new functions.https.HttpsError("invalid-argument", message);
+      }
+      throw new functions.https.HttpsError(
+        "internal",
+        error instanceof Error ? error.message : message
+      );
     }
+  });
 
-    const contactData = {
-      ...validated,
-      status: "new",
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    const docRef = await db.collection("contactMessages").add(contactData);
-
-    res.json({ id: docRef.id, success: true });
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors[0].message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
 
 export const adminUpdateContactStatus = functions.region("us-central1").https.onCall(async (data, context) => {
   requireAdmin(context);

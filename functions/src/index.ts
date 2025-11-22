@@ -4,17 +4,14 @@ import Stripe from "stripe";
 import fetch from "cross-fetch";
 import { v4 as uuidv4 } from "uuid";
 
-if (process.env.FUNCTIONS_EMULATOR === "true") {
-  require("dotenv").config();
-}
 
 admin.initializeApp();
 const db = admin.firestore();
 
 if (process.env.FUNCTIONS_EMULATOR === "true") {
   // charge le .env en local quand tu utilises l’émulateur
-  require("dotenv").config();
 }
+require("dotenv").config();
 
 const stripeSecretKey = process.env.STRIPE_SK;
 if (!stripeSecretKey) {

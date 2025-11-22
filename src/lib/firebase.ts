@@ -5,13 +5,18 @@ import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getStorage, connectStorageEmulator } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY || "dev-api-key",
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN || "deepestrecords.firebaseapp.com",
-  projectId: import.meta.env.VITE_PROJECT_ID || "deepestrecords",
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET || "deepestrecords.appspot.com",
-  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_ID || "dev-app-id",
+  apiKey: import.meta.env.VITE_FB_API_KEY,
+  authDomain: import.meta.env.VITE_FB_AUTH_DOMAIN ,
+  projectId: import.meta.env.VITE_FB_PROJECT_ID ,
+  storageBucket: import.meta.env.VITE_FB_STORAGE ,
+  messagingSenderId: import.meta.env.VITE_FB_MSG_SENDER,
+  appId: import.meta.env.VITE_FB_APP_ID ,
 };
+
+if (!firebaseConfig.apiKey) throw new Error("Missing VITE_FB_API_KEY");
+if (!firebaseConfig.appId?.startsWith("1:")) throw new Error("VITE_FB_APP_ID looks wrong");
+if (!firebaseConfig.authDomain?.endsWith(".firebaseapp.com")) throw new Error("VITE_FB_AUTH_DOMAIN looks wrong");
+
 
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
