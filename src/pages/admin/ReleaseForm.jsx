@@ -133,7 +133,8 @@ const ReleaseForm = () => {
       } else {
         const result = await adminApi.releases.create(dataToSave);
         alert('Release created successfully!');
-        navigate(`/admin/releases/${result.id}/edit`);
+        // Retour à la liste pour continuer le workflow d'édition/visualisation
+        navigate('/admin/releases');
       }
     } catch (err) {
       console.error('Error saving release:', err);
@@ -296,14 +297,27 @@ const ReleaseForm = () => {
             </div>
             <div className="flex items-center gap-3">
               {isEdit && (
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className="bg-zinc-800 text-red-400 px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2"
-                >
-                  <Trash2 className="w-5 h-5" />
-                  Archive
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="bg-zinc-800 text-red-400 px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    Archive
+                  </button>
+
+                  {formData.slug && (
+                    <a
+                      href={`/product/${formData.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-zinc-800 text-white px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors ml-2"
+                    >
+                      View on site
+                    </a>
+                  )}
+                </>
               )}
             </div>
           </div>

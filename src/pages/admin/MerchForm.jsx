@@ -92,7 +92,7 @@ const MerchForm = () => {
       } else {
         const result = await adminApi.merch.create(dataToSave);
         alert('Merch created successfully!');
-        navigate(`/admin/merch/${result.id}/edit`);
+        navigate('/admin/merch');
       }
     } catch (err) {
       console.error('Error saving merch:', err);
@@ -163,14 +163,27 @@ const MerchForm = () => {
               </div>
             </div>
             {isEdit && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="bg-zinc-800 text-red-400 px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2"
-              >
-                <Trash2 className="w-5 h-5" />
-                Archive
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="bg-zinc-800 text-red-400 px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  Archive
+                </button>
+
+                {formData.slug && (
+                  <a
+                    href={`/product/${formData.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-zinc-800 text-white px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors ml-2"
+                  >
+                    View on site
+                  </a>
+                )}
+              </>
             )}
           </div>
 

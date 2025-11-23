@@ -63,6 +63,10 @@ export const adminApi = {
       return callFunction('getSignedUploadUrl', { path, contentType });
     },
 
+    getDownloadUrl: async (path) => {
+      return callFunction('getSignedDownloadUrl', { path });
+    },
+
     uploadFile: async (file, path) => {
       const contentType = file.type;
       const { uploadUrl, publicUrl } = await adminApi.storage.getUploadUrl(path, contentType);
@@ -79,7 +83,13 @@ export const adminApi = {
         throw new Error('Failed to upload file');
       }
 
-      return publicUrl;
+      // Return both a URL to use and the publicUrl as a fallback
+      try {
+        const { downloadUrl } = await adminApi.storage.getDownloadUrl(path);
+        return { url: downloadUrl || publicUrl, publicUrl };
+      } catch (e) {
+        return { url: publicUrl, publicUrl };
+      }
     },
   },
 };

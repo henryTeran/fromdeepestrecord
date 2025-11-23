@@ -23,7 +23,7 @@ const ImageUploader = ({
     setUploading(true);
 
     try {
-      const uploadPromises = files.map(async (file) => {
+        const uploadPromises = files.map(async (file) => {
         if (!file.type.startsWith('image/')) {
           throw new Error(`${file.name} is not an image`);
         }
@@ -31,8 +31,10 @@ const ImageUploader = ({
         const timestamp = Date.now();
         const path = `releases/${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-        const publicUrl = await adminApi.storage.uploadFile(file, path);
-        return publicUrl;
+        const result = await adminApi.storage.uploadFile(file, path);
+        // result can be either a string (legacy) or an object { url, publicUrl }
+        if (typeof result === 'string') return result;
+        return result.url || result.publicUrl;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);

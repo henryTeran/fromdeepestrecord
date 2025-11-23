@@ -34,6 +34,20 @@ const slugify = (text: string): string => {
     .replace(/^-+|-+$/g, "");
 };
 
+// Replace null values with undefined recursively so Zod optional() accepts them
+function replaceNulls<T>(obj: T): T {
+  if (obj === null) return undefined as unknown as T;
+  if (Array.isArray(obj)) return obj.map((v: any) => replaceNulls(v)) as unknown as T;
+  if (typeof obj === "object" && obj !== null) {
+    const out: any = {};
+    for (const [k, v] of Object.entries(obj as any)) {
+      out[k] = v === null ? undefined : replaceNulls(v);
+    }
+    return out as T;
+  }
+  return obj;
+}
+
 const ReleaseFormatSchema = z.object({
   sku: z.string().min(1),
   type: z.enum(["Vinyl", "CD", "Cassette"]),
@@ -106,7 +120,8 @@ export const adminCreateRelease = functions.region("us-central1").https.onCall(a
   requireAdmin(context);
 
   try {
-    const validated = ReleaseSchema.parse(data);
+    const sanitized = replaceNulls(data);
+    const validated = ReleaseSchema.parse(sanitized);
 
     const slug = slugify(
       `${validated.artistName || "unknown"}-${validated.title}-${validated.catno || ""}`
@@ -130,6 +145,34 @@ export const adminCreateRelease = functions.region("us-central1").https.onCall(a
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    // Convert string dates to Firestore Timestamps when provided
+    if (validated.releaseDate && typeof validated.releaseDate === 'string') {
+      try {
+        releaseData.releaseDate = admin.firestore.Timestamp.fromDate(new Date(validated.releaseDate));
+      } catch (e) {
+        // leave as-is; validation should have prevented invalid date
+      }
+    }
+
+    if (validated.preorderAt && typeof validated.preorderAt === 'string') {
+      try {
+        releaseData.preorderAt = admin.firestore.Timestamp.fromDate(new Date(validated.preorderAt));
+      } catch (e) {}
+    }
+
+    // Convert format-level preorderAt strings too
+    if (Array.isArray(validated.formats)) {
+      releaseData.formats = validated.formats.map((f: any) => {
+        const copy = { ...f };
+        if (copy.preorderAt && typeof copy.preorderAt === 'string') {
+          try {
+            copy.preorderAt = admin.firestore.Timestamp.fromDate(new Date(copy.preorderAt));
+          } catch (e) {}
+        }
+        return copy;
+      });
+    }
+
     if (validated.artistRef) {
       releaseData.artistRef = db.collection("artists").doc(validated.artistRef);
     }
@@ -138,10 +181,14 @@ export const adminCreateRelease = functions.region("us-central1").https.onCall(a
       releaseData.labelRef = db.collection("labels").doc(validated.labelRef);
     }
 
-    const docRef = await db.collection("releases").add(releaseData);
+    // Remove undefined values before writing to Firestore
+    const cleanedReleaseData = removeUndefined(releaseData as any);
+
+    const docRef = await db.collection("releases").add(cleanedReleaseData);
 
     return { id: docRef.id, slug };
   } catch (error) {
+    console.error("adminCreateRelease validation failed:", error);
     throw new functions.https.HttpsError(
       "invalid-argument",
       firstZodIssueMessage(error, "Invalid request payload")
@@ -178,6 +225,31 @@ export const adminUpdateRelease = functions.region("us-central1").https.onCall(a
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    // Convert string dates to Firestore Timestamps if present in update
+    if (dataToUpdate.releaseDate && typeof dataToUpdate.releaseDate === 'string') {
+      try {
+        dataToUpdate.releaseDate = admin.firestore.Timestamp.fromDate(new Date(dataToUpdate.releaseDate));
+      } catch (e) {}
+    }
+
+    if (dataToUpdate.preorderAt && typeof dataToUpdate.preorderAt === 'string') {
+      try {
+        dataToUpdate.preorderAt = admin.firestore.Timestamp.fromDate(new Date(dataToUpdate.preorderAt));
+      } catch (e) {}
+    }
+
+    if (Array.isArray(dataToUpdate.formats)) {
+      dataToUpdate.formats = dataToUpdate.formats.map((f: any) => {
+        const copy = { ...f };
+        if (copy.preorderAt && typeof copy.preorderAt === 'string') {
+          try {
+            copy.preorderAt = admin.firestore.Timestamp.fromDate(new Date(copy.preorderAt));
+          } catch (e) {}
+        }
+        return copy;
+      });
+    }
+
     if (updateData.artistRef) {
       dataToUpdate.artistRef = db.collection("artists").doc(updateData.artistRef);
     }
@@ -186,7 +258,8 @@ export const adminUpdateRelease = functions.region("us-central1").https.onCall(a
       dataToUpdate.labelRef = db.collection("labels").doc(updateData.labelRef);
     }
 
-    await releaseRef.update(dataToUpdate);
+    const cleanedUpdate = removeUndefined(dataToUpdate as any);
+    await releaseRef.update(cleanedUpdate);
 
     return { success: true, id };
   } catch (error: any) {
@@ -258,7 +331,14 @@ export const adminCreateMerch = functions
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
 
-      const docRef = await db.collection("merch").add(merchData);
+      if (validated.preorderAt && typeof validated.preorderAt === 'string') {
+        try {
+          (merchData as any).preorderAt = admin.firestore.Timestamp.fromDate(new Date(validated.preorderAt));
+        } catch (e) {}
+      }
+
+      const cleanedMerchData = removeUndefined(merchData as any);
+      const docRef = await db.collection("merch").add(cleanedMerchData);
 
       // ✅ onCall doit retourner un objet
       return { id: docRef.id, slug };
@@ -288,10 +368,18 @@ export const adminUpdateMerch = functions.region("us-central1").https.onCall(asy
       throw new functions.https.HttpsError("not-found", "Merch not found");
     }
 
-    await merchRef.update({
+    // Convert date strings to Timestamps for updates
+    if (updateData.preorderAt && typeof updateData.preorderAt === 'string') {
+      try {
+        updateData.preorderAt = admin.firestore.Timestamp.fromDate(new Date(updateData.preorderAt));
+      } catch (e) {}
+    }
+
+    const merchUpdatePayload = removeUndefined({
       ...updateData,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    } as any);
+    await merchRef.update(merchUpdatePayload);
 
     return { success: true, id };
   } catch (error: any) {
@@ -367,7 +455,73 @@ export const getSignedUploadUrl = functions.region("us-central1").https.onCall(a
 
     return { uploadUrl, publicUrl };
   } catch (error: any) {
-    throw new functions.https.HttpsError("internal", error.message);
+    // Log full error for diagnostics
+    console.error("getSignedUploadUrl error:", error && error.stack ? error.stack : error);
+
+    const msg = String(error?.message || error || "Unknown error");
+
+    // Detect common IAM signBlob permission issue and return clear guidance
+    if (msg.includes("signBlob") || msg.includes("iam.serviceAccounts.signBlob") || msg.includes("Permission 'iam.serviceAccounts.signBlob'")) {
+      const guidance =
+        "Insufficient IAM permissions to sign upload URLs. Grant the Cloud Functions service account the role 'roles/iam.serviceAccountTokenCreator' (Service Account Token Creator) or allow the service account to sign blobs. Example:\n" +
+        "gcloud projects add-iam-policy-binding YOUR_PROJECT_ID --member=serviceAccount:YOUR_FUNCTIONS_SA_EMAIL --role=roles/iam.serviceAccountTokenCreator\n" +
+        "Replace YOUR_FUNCTIONS_SA_EMAIL with the functions runtime service account (e.g. PROJECT_ID@appspot.gserviceaccount.com)";
+
+      throw new functions.https.HttpsError("permission-denied", guidance);
+    }
+
+    // For invalid input, surface INVALID_ARGUMENT to the client
+    if (msg.includes("Invalid") || msg.includes("invalid")) {
+      throw new functions.https.HttpsError("invalid-argument", msg);
+    }
+
+    throw new functions.https.HttpsError("internal", msg);
+  }
+});
+
+// Retourne une URL signée en lecture pour un fichier existant
+export const getSignedDownloadUrl = functions.region("us-central1").https.onCall(async (data, context) => {
+  requireAdmin(context);
+
+  const { path } = data || {};
+  if (!path || typeof path !== "string") {
+    throw new functions.https.HttpsError("invalid-argument", "path is required");
+  }
+
+  try {
+    const bucketName =
+      process.env.VITE_FB_STORAGE ||
+      (process.env.GCLOUD_PROJECT ? `${process.env.GCLOUD_PROJECT}.appspot.com` : undefined) ||
+      (process.env.GCP_PROJECT ? `${process.env.GCP_PROJECT}.appspot.com` : undefined);
+
+    if (!bucketName) {
+      console.error("No bucket configured for signed URL (download)");
+      throw new functions.https.HttpsError("failed-precondition", "Storage bucket not configured");
+    }
+
+    const file = storage.bucket(bucketName).file(path);
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new functions.https.HttpsError("not-found", "File not found");
+    }
+
+    const [downloadUrl] = await file.getSignedUrl({
+      version: "v4",
+      action: "read",
+      expires: new Date(Date.now() + 60 * 60 * 1000),
+    });
+
+    return { downloadUrl };
+  } catch (error: any) {
+    console.error("getSignedDownloadUrl error:", error && error.stack ? error.stack : error);
+    const msg = String(error?.message || error || "Unknown error");
+    if (msg.includes("signBlob") || msg.includes("iam.serviceAccounts.signBlob")) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Missing IAM permission to sign URLs. Grant roles/iam.serviceAccountTokenCreator to the functions service account."
+      );
+    }
+    throw new functions.https.HttpsError("internal", msg);
   }
 });
 
@@ -443,9 +597,29 @@ export const adminUpdateContactStatus = functions.region("us-central1").https.on
 
 
 function firstZodIssueMessage(err: unknown, fallback = "Invalid input") {
-  if (err instanceof ZodError && Array.isArray(err.issues) && err.issues[0]?.message) {
-    return err.issues[0].message;
+  if (err instanceof ZodError && Array.isArray(err.issues) && err.issues[0]) {
+    const issue = err.issues[0];
+    const path = Array.isArray(issue.path) && issue.path.length ? issue.path.join(".") : undefined;
+    return path ? `${path}: ${issue.message}` : issue.message;
   }
   if (err instanceof Error && err.message) return err.message;
   return fallback;
+}
+
+// Remove undefined values recursively to avoid Firestore write errors
+function removeUndefined<T>(obj: T): T {
+  if (obj === undefined) return undefined as unknown as T;
+  if (obj === null) return null as unknown as T;
+  if (Array.isArray(obj)) return obj.map((v: any) => removeUndefined(v)) as unknown as T;
+  if (typeof obj === 'object' && obj !== null) {
+    const out: any = {};
+    for (const [k, v] of Object.entries(obj as any)) {
+      if (v === undefined) continue;
+      const cleaned = removeUndefined(v);
+      if (cleaned === undefined) continue;
+      out[k] = cleaned;
+    }
+    return out as T;
+  }
+  return obj;
 }

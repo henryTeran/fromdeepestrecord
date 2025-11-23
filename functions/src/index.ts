@@ -11,6 +11,8 @@ if (process.env.FUNCTIONS_EMULATOR === "true") {
 
 admin.initializeApp();
 const db = admin.firestore();
+// Ignore undefined properties when writing documents to avoid Firestore errors
+db.settings({ ignoreUndefinedProperties: true });
 
 const stripeSecretKey = process.env.STRIPE_SK;
 const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
