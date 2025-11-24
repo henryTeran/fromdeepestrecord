@@ -266,7 +266,7 @@ const CategoryPage = () => {
               }}
               className="mt-4 text-red-600 hover:text-red-500 text-sm"
             >
-              Clear all filters
+              {t('clearAllFilters')}
             </button>
           </div>
         )}
@@ -287,9 +287,9 @@ const CategoryPage = () => {
         {!loading && releases.length === 0 && (
           <EmptyState
             icon={Search}
-            title="No releases found"
-            description="Try adjusting your filters or browse all releases"
-            actionLabel="Clear all filters"
+            title={t('noReleasesFound')}
+            description={t('noReleasesDesc')}
+            actionLabel={t('clearAllFilters')}
             action={() => {
               setFilters({
                 format: '',
@@ -393,10 +393,10 @@ const CategoryPage = () => {
                   {loading ? (
                     <>
                       <Loader className="w-5 h-5 animate-spin" />
-                      Loading...
+                      {t('loading')}
                     </>
                   ) : (
-                    'Load More'
+                    t('loadMore')
                   )}
                 </button>
               </div>

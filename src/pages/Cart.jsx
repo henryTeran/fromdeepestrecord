@@ -9,8 +9,10 @@ import { Minus, Plus, Trash2, Loader2, AlertCircle, ShoppingCart } from 'lucide-
 import { Link } from 'react-router-dom';
 import Head from '../seo/Head';
 import EmptyState from '../components/EmptyState';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Cart = () => {
+  const { t } = useLanguage();
   const cart = useCartStore(state => state.cart);
   const removeFromCart = useCartStore(state => state.removeFromCart);
   const updateQuantity = useCartStore(state => state.updateQuantity);
@@ -79,14 +81,14 @@ const Cart = () => {
       <Navigation />
       <CategoryNav />
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-8 text-white">Shopping Cart</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-8 text-white">{t('shoppingCart')}</h1>
 
         {cart.length === 0 ? (
           <EmptyState
             icon={ShoppingCart}
-            title="Your cart is empty"
-            description="Start adding some releases or merch to your collection"
-            actionLabel="Browse Releases"
+            title={t('yourCartIsEmpty')}
+            description={t('cartEmptyDesc')}
+            actionLabel={t('browseReleases')}
             actionLink="/category/releases"
           />
         ) : (
@@ -94,12 +96,12 @@ const Cart = () => {
             <div className="lg:col-span-2">
               <div className="bg-black rounded-lg p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-white">Items ({cart.length})</h2>
+                  <h2 className="text-xl font-bold text-white">{t('items')} ({cart.length})</h2>
                   <button
                     onClick={clearCart}
                     className="text-red-600 hover:text-red-700 transition-colors text-sm"
                   >
-                    Clear Cart
+                    {t('clearCart')}
                   </button>
                 </div>
 
@@ -206,10 +208,10 @@ const Cart = () => {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Processing...
+                      {t('loading')}
                     </>
                   ) : (
-                    'Proceed to Checkout'
+                    t('checkout')
                   )}
                 </button>
 
@@ -217,7 +219,7 @@ const Cart = () => {
                   to="/category/releases"
                   className="block text-center text-gray-400 hover:text-white transition-colors"
                 >
-                  Continue Shopping
+                  {t('continueShopping')}
                 </Link>
 
                 <div className="mt-6 pt-6 border-t border-zinc-800 text-xs text-gray-500 space-y-2">

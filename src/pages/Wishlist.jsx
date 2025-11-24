@@ -7,8 +7,10 @@ import { Link } from 'react-router-dom';
 import Head from '../seo/Head';
 import EmptyState from '../components/EmptyState';
 import { Heart } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Wishlist = () => {
+  const { t } = useLanguage();
   const wishlist = useWishlistStore(state => state.wishlist);
   const removeFromWishlist = useWishlistStore(state => state.removeFromWishlist);
 
@@ -22,13 +24,13 @@ const Wishlist = () => {
       <Navigation />
       <CategoryNav />
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">Mes Favoris</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">{t('myWishlist')}</h1>
         {wishlist.length === 0 ? (
           <EmptyState
             icon={Heart}
-            title="Your wishlist is empty"
-            description="Start adding your favorite releases to your wishlist"
-            actionLabel="Browse Catalog"
+            title={t('yourWishlistIsEmpty')}
+            description={t('wishlistEmptyDesc')}
+            actionLabel={t('browseCatalog')}
             actionLink="/category/releases"
           />
         ) : (
@@ -41,13 +43,13 @@ const Wishlist = () => {
                 <p className="text-red-600 mb-2">${item.price.toFixed(2)}</p>
                 <div className="flex justify-between items-center">
                   <Link to={`/product/${item.id}`} className="text-sm text-white underline">
-                    Voir
+                    {t('view')}
                   </Link>
                   <button
                     onClick={() => removeFromWishlist(item.id)}
                     className="text-red-500 text-sm"
                   >
-                    Retirer
+                    {t('remove')}
                   </button>
                 </div>
               </div>
