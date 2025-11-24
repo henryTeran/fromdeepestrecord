@@ -229,12 +229,12 @@ const ProductPage = () => {
 
           <div className="space-y-6">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
                 {release.title}
               </h1>
               <Link
                 to={`/artist/${release.artist?.slug}`}
-                className="text-2xl text-gray-300 hover:text-red-600 transition-colors"
+                className="text-xl sm:text-2xl text-gray-300 hover:text-red-600 transition-colors"
               >
                 {release.artist?.name || 'Unknown Artist'}
               </Link>

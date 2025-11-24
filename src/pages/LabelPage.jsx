@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import { Footer } from '../components/Footer';
 import ProductSuggestions from '../components/ProductSuggestions';
 import Head from '../seo/Head';
+import { Loader2 } from 'lucide-react';
 
 export default function LabelPage() {
   const { slug } = useParams();
@@ -82,13 +83,13 @@ export default function LabelPage() {
 
   if (loading) {
     return (
-      <>
+      <div className="min-h-screen bg-zinc-900 text-gray-300">
         <Header />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-xl">Loading...</div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
         </div>
         <Footer />
-      </>
+      </div>
     );
   }
 

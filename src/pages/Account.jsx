@@ -110,20 +110,20 @@ const Account = () => {
         <Navigation />
         <CategoryNav />
         <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="bg-black p-8 rounded-lg">
-            <div className="flex items-center justify-between mb-8">
+          <div className="bg-black p-4 sm:p-8 rounded-lg">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
               <div className="flex items-center gap-4">
-                <div className="bg-red-600 p-4 rounded-full">
-                  <User className="w-8 h-8 text-white" />
+                <div className="bg-red-600 p-3 sm:p-4 rounded-full flex-shrink-0">
+                  <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-white">My Account</h1>
-                  <p className="text-gray-400 mt-1">{user.email}</p>
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Account</h1>
+                  <p className="text-gray-400 mt-1 text-sm sm:text-base truncate">{user.email}</p>
                 </div>
               </div>
               <button
                 onClick={handleLogout}
-                className="bg-zinc-800 text-white px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2"
+                className="bg-zinc-800 text-white px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
               >
                 <LogOut className="w-5 h-5" />
                 Logout

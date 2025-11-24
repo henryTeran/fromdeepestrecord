@@ -21,8 +21,8 @@ const Wishlist = () => {
       <Header />
       <Navigation />
       <CategoryNav />
-      <div className="p-8 text-white">
-        <h1 className="text-3xl font-bold mb-6">Mes Favoris</h1>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">Mes Favoris</h1>
         {wishlist.length === 0 ? (
           <EmptyState
             icon={Heart}
@@ -32,7 +32,7 @@ const Wishlist = () => {
             actionLink="/category/releases"
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {wishlist.map((item) => (
               <div key={item.id} className="bg-zinc-900 p-4 rounded-lg">
                 <img src={item.image} alt={item.title} className="w-full mb-4" />

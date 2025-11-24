@@ -79,7 +79,7 @@ const Cart = () => {
       <Navigation />
       <CategoryNav />
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-white">Shopping Cart</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-8 text-white">Shopping Cart</h1>
 
         {cart.length === 0 ? (
           <EmptyState
@@ -108,27 +108,27 @@ const Cart = () => {
                     const itemKey = item.sku ? `${item.id}-${item.sku}` : item.id;
 
                     return (
-                      <div key={itemKey} className="flex items-center space-x-4 bg-zinc-900 p-4 rounded-lg">
+                      <div key={itemKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-zinc-900 p-4 rounded-lg">
                         <img
                           src={item.image}
                           alt={item.title}
-                          className="w-20 h-20 object-cover rounded"
+                          className="w-20 h-20 sm:w-20 sm:h-20 object-cover rounded flex-shrink-0"
                           loading="lazy"
                         />
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <Link
                             to={`/product/${item.id}`}
-                            className="font-bold text-white hover:text-red-600 transition-colors"
+                            className="font-bold text-white hover:text-red-600 transition-colors block truncate"
                           >
                             {item.title}
                           </Link>
-                          <p className="text-gray-400 text-sm">{item.artist}</p>
+                          <p className="text-gray-400 text-sm truncate">{item.artist}</p>
                           {item.format && (
                             <p className="text-gray-500 text-xs">{item.format}</p>
                           )}
-                          <p className="text-red-600 font-bold">CHF {item.price.toFixed(2)}</p>
+                          <p className="text-red-600 font-bold mt-1">CHF {item.price.toFixed(2)}</p>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                           <div className="flex items-center space-x-2 bg-zinc-800 rounded">
                             <button
                               onClick={() => updateQuantity(item.id, item.sku, Math.max(1, item.quantity - 1))}
