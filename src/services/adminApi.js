@@ -1,5 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
-import { fx } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { fx, storage } from '../lib/firebase';
 
 const callFunction = async (name, data) => {
   const fn = httpsCallable(fx, name);
@@ -63,36 +64,20 @@ export const adminApi = {
   },
 
   storage: {
-    getUploadUrl: async (path, contentType) => {
-      return callFunction('getSignedUploadUrl', { path, contentType });
-    },
-
-    getDownloadUrl: async (path) => {
-      return callFunction('getSignedDownloadUrl', { path });
-    },
-
     uploadFile: async (file, path) => {
-      const contentType = file.type;
-      const { uploadUrl, publicUrl } = await adminApi.storage.getUploadUrl(path, contentType);
-
-      const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': contentType,
-        },
-        body: file,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload file');
-      }
-
-      // Return both a URL to use and the publicUrl as a fallback
       try {
-        const { downloadUrl } = await adminApi.storage.getDownloadUrl(path);
-        return { url: downloadUrl || publicUrl, publicUrl };
-      } catch (e) {
-        return { url: publicUrl, publicUrl };
+        // Upload directly using Firebase Storage SDK (avoids CORS issues)
+        const storageRef = ref(storage, path);
+        const snapshot = await uploadBytes(storageRef, file, {
+          contentType: file.type,
+        });
+        
+        // Get the download URL
+        const downloadUrl = await getDownloadURL(snapshot.ref);
+        return downloadUrl;
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        throw new Error(`Failed to upload file: ${error.message}`);
       }
     },
   },

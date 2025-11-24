@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, limit, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import Header from '../components/Header';
 import Navigation from '../components/Navigation';
@@ -12,6 +12,38 @@ import { useCartStore } from '../store/cartStore';
 import { useWishlistStore } from '../store/wishlistStore';
 import { Heart, ShoppingCart, Truck, Shield, RotateCcw, Loader2, Clock } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+
+// Helper pour convertir les timestamps Firestore de manière sécurisée
+const safeToDate = (timestamp) => {
+  if (!timestamp) return null;
+  if (typeof timestamp?.toDate === 'function') {
+    return timestamp.toDate();
+  }
+  if (timestamp instanceof Date) return timestamp;
+  if (typeof timestamp === 'string') return new Date(timestamp);
+  return null;
+};
+
+// Convertit récursivement tous les timestamps Firestore en Date
+const convertTimestamps = (obj) => {
+  if (!obj || typeof obj !== 'object') return obj;
+  
+  if (typeof obj.toDate === 'function') {
+    return safeToDate(obj);
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => convertTimestamps(item));
+  }
+  
+  const converted = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      converted[key] = convertTimestamps(obj[key]);
+    }
+  }
+  return converted;
+};
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -33,18 +65,21 @@ const ProductPage = () => {
       try {
         setLoading(true);
 
+        // Fetch all releases and filter client-side to avoid index requirements
         const releasesRef = collection(db, 'releases');
-        const q = query(releasesRef, where('slug', '==', slug), limit(1));
+        const q = query(releasesRef, limit(100));
         const snapshot = await getDocs(q);
 
-        if (snapshot.empty) {
+        // Find release by slug client-side
+        const releaseDoc = snapshot.docs.find(doc => doc.data().slug === slug);
+
+        if (!releaseDoc) {
           setError('Release not found');
           setLoading(false);
           return;
         }
 
-        const releaseDoc = snapshot.docs[0];
-        const releaseData = { id: releaseDoc.id, ...releaseDoc.data() };
+        const releaseData = { id: releaseDoc.id, ...convertTimestamps(releaseDoc.data()) };
 
         if (releaseData.artistRef) {
           const artistDoc = await getDoc(releaseData.artistRef);
@@ -68,15 +103,15 @@ const ProductPage = () => {
         }
 
         if (releaseData.labelRef) {
+          // Fetch all releases and filter by label client-side
           const relatedQuery = query(
             collection(db, 'releases'),
-            where('labelRef', '==', releaseData.labelRef),
-            limit(5)
+            limit(100)
           );
           const relatedSnapshot = await getDocs(relatedQuery);
           const related = relatedSnapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(r => r.id !== releaseData.id)
+            .map(doc => ({ id: doc.id, ...convertTimestamps(doc.data()) }))
+            .filter(r => r.labelRef?.id === releaseData.labelRef?.id && r.id !== releaseData.id)
             .slice(0, 4);
           setRelatedReleases(related);
         }

@@ -31,10 +31,8 @@ const ImageUploader = ({
         const timestamp = Date.now();
         const path = `releases/${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-        const result = await adminApi.storage.uploadFile(file, path);
-        // result can be either a string (legacy) or an object { url, publicUrl }
-        if (typeof result === 'string') return result;
-        return result.url || result.publicUrl;
+        const downloadUrl = await adminApi.storage.uploadFile(file, path);
+        return downloadUrl;
       });
 
       const uploadedUrls = await Promise.all(uploadPromises);
