@@ -44,6 +44,10 @@ export const adminApi = {
     },
   },
 
+  deleteMerch: async (id) => {
+    return callFunction('adminDeleteMerch', { id, hard: true });
+  },
+
   contact: {
     submit: async (data) => {
       return callFunction('submitContact', data);

@@ -1,12 +1,10 @@
 import React from "react";
-import { Heart, Calendar, Clock, Zap } from "lucide-react";
+import { Heart, Calendar, Clock, Zap, Loader2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { products } from "../data/products";
 import { useCartStore } from "../store/cartStore";
 import { Link } from "react-router-dom";
 import { useWishlistStore } from "../store/wishlistStore";
-
-const newArrivals = products.filter((item) => item.category === "new");
+import { useReleases } from "../hooks/useReleases";
 
 export const NewArrivals = () => {
   const addToCart = useCartStore((state) => state.addToCart);
@@ -14,6 +12,19 @@ export const NewArrivals = () => {
   const removeFromWishlist = useWishlistStore(state => state.removeFromWishlist);
   const isInWishlist = useWishlistStore(state => state.isInWishlist);
   const { t } = useLanguage();
+  
+  // Fetch latest releases from Firebase
+  const { releases, loading } = useReleases({}, 'newest', 6);
+  
+  if (loading) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-zinc-900 to-black">
+        <div className="max-w-7xl mx-auto px-6 flex justify-center items-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-gradient-to-b from-zinc-900 to-black">
@@ -42,9 +53,9 @@ export const NewArrivals = () => {
 
         {/* Products List */}
         <div className="space-y-6">
-          {newArrivals.map((item, index) => (
+          {releases.slice(0, 6).map((release, index) => (
             <div
-              key={item.id}
+              key={release.id}
               className="glass rounded-2xl p-6 hover:bg-white/10 transition-all duration-500 group animate-slideInRight"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
@@ -52,8 +63,8 @@ export const NewArrivals = () => {
                 {/* Product Image */}
                 <div className="relative flex-shrink-0">
                   <img
-                    src={item.image}
-                    alt={item.title}
+                    src={release.cover}
+                    alt={release.title}
                     className="w-full md:w-32 h-32 object-cover rounded-xl transition-all duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -66,46 +77,48 @@ export const NewArrivals = () => {
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
                   <Link 
-                    to={`/product/${item.id}`} 
+                    to={`/release/${release.slug}`} 
                     className="block group-hover:text-red-400 transition-colors duration-300"
                   >
                     <h3 className="text-xl font-bold text-white mb-1 truncate">
-                      {item.title}
+                      {release.title}
                     </h3>
-                    <p className="text-gray-400 font-medium mb-3">{item.band}</p>
+                    <p className="text-gray-400 font-medium mb-3">{release.artist?.name || 'Unknown Artist'}</p>
                   </Link>
                   
                   <div className="flex flex-wrap items-center gap-2 mb-4">
                     <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-semibold">
-                      Extreme Metal
+                      {release.genre || 'Extreme Metal'}
                     </span>
-                    <span className="bg-gray-500/20 text-gray-400 px-3 py-1 rounded-full text-xs">
-                      CD Format
-                    </span>
+                    {release.formats && release.formats.length > 0 && (
+                      <span className="bg-gray-500/20 text-gray-400 px-3 py-1 rounded-full text-xs">
+                        {release.formats[0].type}
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex flex-col justify-between items-end space-y-4">
                   <span className="text-2xl font-bold gradient-text">
-                    ${item.price.toFixed(2)}
+                    CHF {release.formats?.[0]?.price?.toFixed(2) || '0.00'}
                   </span>
                   
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() =>
-                        isInWishlist(item.id) ? removeFromWishlist(item.id) : addToWishlist(item)
+                        isInWishlist(release.id) ? removeFromWishlist(release.id) : addToWishlist(release)
                       }
                       className="p-3 bg-white/10 rounded-xl hover:bg-red-500/20 transition-all duration-300 group/btn"
                     >
                       <Heart className={`w-5 h-5 transition-all duration-300 ${
-                        isInWishlist(item.id) 
+                        isInWishlist(release.id) 
                           ? 'text-red-400 fill-current' 
                           : 'text-gray-400 group-hover/btn:text-red-400'
                       }`} />
                     </button>
                     <button
-                      onClick={() => addToCart(item)}
+                      onClick={() => addToCart(release)}
                       className="btn-primary px-6 py-3 flex items-center space-x-2"
                     >
                       <span>{t("addToCart")}</span>

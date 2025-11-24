@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import AdminGuard from '../../components/admin/AdminGuard';
 import Table from '../../components/admin/Table';
 import { Plus, Loader2 } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
+
+const safeToDate = (timestamp) => {
+  if (!timestamp) return null;
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate();
+  }
+  if (timestamp instanceof Date) return timestamp;
+  if (typeof timestamp === 'string') return new Date(timestamp);
+  return null;
+};
 
 const Releases = () => {
   const navigate = useNavigate();
@@ -14,45 +24,44 @@ const Releases = () => {
   const [error, setError] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
 
-  useEffect(() => {
-    fetchReleases();
-  }, [showArchived]);
-
   const fetchReleases = async () => {
     try {
       setLoading(true);
       const releasesRef = collection(db, 'releases');
-      const constraints = [orderBy('createdAt', 'desc'), limit(100)];
-
-      if (!showArchived) {
-        constraints.unshift(where('status', '!=', 'archived'));
-      }
-
-      const q = query(releasesRef, ...constraints);
+      const q = query(releasesRef, orderBy('createdAt', 'desc'), limit(100));
       const snapshot = await getDocs(q);
 
       const items = await Promise.all(
-        snapshot.docs.map(async (doc) => {
-          const data = doc.data();
-          let artistName = 'Unknown';
-
-          if (data.artistRef) {
-            try {
-              const artistDoc = await data.artistRef.get();
-              if (artistDoc.exists()) {
-                artistName = artistDoc.data().name;
-              }
-            } catch (err) {
-              console.error('Error fetching artist:', err);
+        snapshot.docs
+          .filter((doc) => {
+            // Filtrage côté client pour éviter erreur d'index
+            if (!showArchived && doc.data().status === 'archived') {
+              return false;
             }
-          }
+            return true;
+          })
+          .map(async (doc) => {
+            const data = doc.data();
+            let artistName = 'Unknown';
 
-          return {
-            id: doc.id,
-            ...data,
-            artistName,
-          };
-        })
+            if (data.artistRef) {
+              try {
+                const artistDoc = await data.artistRef.get();
+                if (artistDoc.exists()) {
+                  artistName = artistDoc.data().name;
+                }
+              } catch (err) {
+                console.error('Error fetching artist:', err);
+              }
+            }
+
+            return {
+              id: doc.id,
+              ...data,
+              artistName,
+              createdAt: safeToDate(data.createdAt)?.toLocaleDateString() || 'Unknown'
+            };
+          })
       );
 
       setReleases(items);
@@ -64,17 +73,27 @@ const Releases = () => {
     }
   };
 
-  const handleDelete = async (item) => {
-    if (!confirm(`Are you sure you want to archive "${item.title}"?`)) {
+  useEffect(() => {
+    fetchReleases();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showArchived]);
+
+  const handleDelete = async (id) => {
+    const item = releases.find(r => r.id === id);
+    if (!item || !confirm(`Are you sure you want to archive "${item.title}"?`)) {
       return;
     }
 
     try {
-      await adminApi.releases.delete(item.id, false);
+      await adminApi.releases.delete(id, false);
       fetchReleases();
     } catch (err) {
       alert('Error deleting release: ' + err.message);
     }
+  };
+
+  const handleEdit = (id) => {
+    navigate(`/admin/releases/${id}/edit`);
   };
 
   const columns = [
@@ -165,9 +184,12 @@ const Releases = () => {
           <Table
             data={releases}
             columns={columns}
-            onEdit={(item) => navigate(`/admin/releases/${item.id}/edit`)}
+            onEdit={handleEdit}
             onDelete={handleDelete}
-            onView={(item) => navigate(`/release/${item.slug}`)}
+            onView={(id) => {
+              const item = releases.find(r => r.id === id);
+              if (item?.slug) navigate(`/release/${item.slug}`);
+            }}
           />
         </div>
       </div>

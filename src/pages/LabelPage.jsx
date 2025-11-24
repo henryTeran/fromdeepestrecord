@@ -7,6 +7,16 @@ import ProductSuggestions from '../components/ProductSuggestions';
 import Head from '../seo/Head';
 import { Loader2 } from 'lucide-react';
 
+const safeToDate = (timestamp) => {
+  if (!timestamp) return null;
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate();
+  }
+  if (timestamp instanceof Date) return timestamp;
+  if (typeof timestamp === 'string') return new Date(timestamp);
+  return null;
+};
+
 export default function LabelPage() {
   const { slug } = useParams();
   const [label, setLabel] = useState(null);
@@ -64,8 +74,8 @@ export default function LabelPage() {
               id: releaseDoc.id,
               ...data,
               artist,
-              releaseDate: data.releaseDate?.toDate(),
-              preorderAt: data.preorderAt?.toDate()
+              releaseDate: safeToDate(data.releaseDate),
+              preorderAt: safeToDate(data.preorderAt)
             };
           })
         );

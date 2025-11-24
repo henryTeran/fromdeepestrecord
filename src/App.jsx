@@ -19,6 +19,8 @@ const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess'));
 const CheckoutCancel = lazy(() => import('./pages/CheckoutCancel'));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const AdminReleases = lazy(() => import('./pages/admin/Releases'));
+const AdminMerch = lazy(() => import('./pages/admin/Merch'));
+const AdminOrders = lazy(() => import('./pages/admin/Orders'));
 const ReleaseForm = lazy(() => import('./pages/admin/ReleaseForm'));
 const MerchForm = lazy(() => import('./pages/admin/MerchForm'));
 const ContactMessages = lazy(() => import('./pages/admin/ContactMessages'));
@@ -63,8 +65,10 @@ function App() {
             <Route path="/admin/releases" element={<AdminGuard><AdminReleases /></AdminGuard>} />
             <Route path="/admin/releases/new" element={<AdminGuard><ReleaseForm /></AdminGuard>} />
             <Route path="/admin/releases/:id/edit" element={<AdminGuard><ReleaseForm /></AdminGuard>} />
+            <Route path="/admin/merch" element={<AdminGuard><AdminMerch /></AdminGuard>} />
             <Route path="/admin/merch/new" element={<AdminGuard><MerchForm /></AdminGuard>} />
             <Route path="/admin/merch/:id/edit" element={<AdminGuard><MerchForm /></AdminGuard>} />
+            <Route path="/admin/orders" element={<AdminGuard><AdminOrders /></AdminGuard>} />
             <Route path="/admin/contact" element={<AdminGuard><ContactMessages /></AdminGuard>} />
           </Routes>
         </Suspense>

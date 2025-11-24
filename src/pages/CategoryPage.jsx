@@ -22,17 +22,42 @@ const CategoryPage = () => {
   const removeFromWishlist = useWishlistStore(state => state.removeFromWishlist);
   const isInWishlist = useWishlistStore(state => state.isInWishlist);
 
+  // Map category URL to format filter
+  const getCategoryFormat = (cat) => {
+    const mapping = {
+      'vinyl': 'Vinyl',
+      'cds': 'CD',
+      'tapes': 'Cassette',
+      'merchandise': 'Merch',
+      'preorders': '', // Special handling for preorders
+      'exclusives': '', // Special handling for exclusives
+      'releases': '' // All releases
+    };
+    return mapping[cat] || '';
+  };
+
   const [filters, setFilters] = useState({
-    format: searchParams.get('format') || '',
+    format: searchParams.get('format') || getCategoryFormat(category),
     genre: searchParams.get('genre') || '',
     country: searchParams.get('country') || '',
     inStock: searchParams.get('inStock') === 'true',
-    preOrder: searchParams.get('preOrder') === 'true',
+    preOrder: (searchParams.get('preOrder') === 'true') || (category === 'preorders'),
   });
 
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest');
   const [showFilters, setShowFilters] = useState(false);
   const [lastDoc, setLastDoc] = useState(null);
+
+  // Update filters when category changes
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      format: getCategoryFormat(category),
+      preOrder: category === 'preorders'
+    }));
+    setLastDoc(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
 
   const { releases, loading, error, hasMore, lastVisible } = useReleases(
     filters,

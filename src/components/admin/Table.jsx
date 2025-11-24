@@ -122,7 +122,7 @@ const Table = ({
                       <div className="flex items-center justify-end gap-2">
                         {onView && (
                           <button
-                            onClick={() => onView(item)}
+                            onClick={() => onView(item.id)}
                             className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
                             aria-label="View"
                           >
@@ -131,7 +131,7 @@ const Table = ({
                         )}
                         {onEdit && (
                           <button
-                            onClick={() => onEdit(item)}
+                            onClick={() => onEdit(item.id)}
                             className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
                             aria-label="Edit"
                           >
@@ -140,7 +140,7 @@ const Table = ({
                         )}
                         {onDelete && (
                           <button
-                            onClick={() => onDelete(item)}
+                            onClick={() => onDelete(item.id)}
                             className="p-2 text-red-400 hover:text-red-300 transition-colors"
                             aria-label="Delete"
                           >

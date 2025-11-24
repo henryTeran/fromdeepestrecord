@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import AdminGuard from '../../components/admin/AdminGuard';
 import Table from '../../components/admin/Table';
 import { Loader2, X, Eye } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
+
+const safeToDate = (timestamp) => {
+  if (!timestamp) return null;
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate();
+  }
+  if (timestamp instanceof Date) return timestamp;
+  if (typeof timestamp === 'string') return new Date(timestamp);
+  return null;
+};
 
 const ContactMessages = () => {
   const [messages, setMessages] = useState([]);
@@ -21,20 +31,22 @@ const ContactMessages = () => {
     try {
       setLoading(true);
       const messagesRef = collection(db, 'contactMessages');
-      const constraints = [orderBy('createdAt', 'desc'), limit(100)];
-
-      if (statusFilter !== 'all') {
-        constraints.unshift(where('status', '==', statusFilter));
-      }
-
-      const q = query(messagesRef, ...constraints);
+      const q = query(messagesRef, orderBy('createdAt', 'desc'), limit(100));
       const snapshot = await getDocs(q);
 
-      const items = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-      }));
+      const items = snapshot.docs
+        .filter(doc => {
+          // Filtrage côté client
+          if (statusFilter !== 'all' && doc.data().status !== statusFilter) {
+            return false;
+          }
+          return true;
+        })
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: safeToDate(doc.data().createdAt),
+        }));
 
       setMessages(items);
       setLoading(false);

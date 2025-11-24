@@ -1,18 +1,60 @@
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Package, ShoppingBag, Mail, Users, TrendingUp, LogOut, Home } from 'lucide-react';
 import AdminGuard from '../../components/admin/AdminGuard';
 import { useAuth } from '../../hooks/useAuth';
+import { collection, query, getDocs, where } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState([
+    { label: 'Total Releases', value: '...', icon: Package, link: '/admin/releases' },
+    { label: 'Merchandise', value: '...', icon: ShoppingBag, link: '/admin/merch' },
+    { label: 'Contact Messages', value: '...', icon: Mail, link: '/admin/contact' },
+    { label: 'Total Sales', value: '...', icon: TrendingUp, link: '/admin/orders' },
+  ]);
 
-  const stats = [
-    { label: 'Total Releases', value: '0', icon: Package, link: '/admin/releases' },
-    { label: 'Merchandise', value: '0', icon: ShoppingBag, link: '/admin/merch' },
-    { label: 'Contact Messages', value: '0', icon: Mail, link: '/admin/contact' },
-    { label: 'Total Sales', value: 'CHF 0', icon: TrendingUp, link: '/admin/orders' },
-  ];
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Count releases
+        const releasesSnap = await getDocs(collection(db, 'releases'));
+        const releasesCount = releasesSnap.size;
+
+        // Count merch
+        const merchSnap = await getDocs(collection(db, 'merch'));
+        const merchCount = merchSnap.size;
+
+        // Count contact messages
+        const messagesSnap = await getDocs(collection(db, 'contactMessages'));
+        const messagesCount = messagesSnap.size;
+
+        // Count orders and total sales
+        const ordersSnap = await getDocs(collection(db, 'orders'));
+        let totalSales = 0;
+        ordersSnap.forEach(doc => {
+          const order = doc.data();
+          totalSales += order.total || 0;
+        });
+
+        setStats([
+          { label: 'Total Releases', value: releasesCount.toString(), icon: Package, link: '/admin/releases' },
+          { label: 'Merchandise', value: merchCount.toString(), icon: ShoppingBag, link: '/admin/merch' },
+          { label: 'Contact Messages', value: messagesCount.toString(), icon: Mail, link: '/admin/contact' },
+          { label: 'Total Sales', value: `CHF ${totalSales.toFixed(2)}`, icon: TrendingUp, link: '/admin/orders' },
+        ]);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleLogout = async () => {
     try {

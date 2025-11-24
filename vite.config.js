@@ -16,18 +16,14 @@ export default defineConfig({
           // Vendor chunks pour les dépendances volumineuses
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/functions'],
-          'ui-vendor': ['lucide-react', 'zustand'],
+          'lucide-vendor': ['lucide-react'],
+          'ui-vendor': ['zustand'],
         },
       },
     },
     // Chunk size warnings (augmentation pour éviter warnings sur gros chunks)
-    chunkSizeWarningLimit: 1000,
-    // Minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Suppression des console.log en production
-      },
-    },
+    chunkSizeWarningLimit: 2000,
+    // Minification avec esbuild (plus rapide que terser)
+    minify: 'esbuild',
   },
 })

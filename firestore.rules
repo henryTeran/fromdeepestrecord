@@ -55,9 +55,17 @@ service cloud.firestore {
     }
 
     match /contactMessages/{id} {
-      allow read: if false;
+      allow read: if signedIn();
       allow create: if true;
-      allow write: if false;
+      allow update: if signedIn();
+      allow delete: if signedIn();
+    }
+
+    match /orders/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if signedIn();
+      allow delete: if signedIn();
     }
   }
 }
