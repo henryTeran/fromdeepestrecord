@@ -47,6 +47,7 @@ const FeaturedReleases = () => {
                   src={item.image}
                   alt={item.title}
                   className="w-full aspect-square object-cover transition-all duration-500 group-hover:scale-110"
+                  loading="lazy"
                 />
                 
                 {/* Overlay with actions */}

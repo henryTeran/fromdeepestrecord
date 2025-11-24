@@ -135,9 +135,10 @@ export default function ArtistPage() {
             <div className="flex items-start gap-8">
               {artist.image && (
                 <img
-                  src={artist.image}
+                  src={artist.photo}
                   alt={artist.name}
                   className="w-32 h-32 object-cover rounded-lg"
+                  loading="lazy"
                 />
               )}
               <div className="flex-1">

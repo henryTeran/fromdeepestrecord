@@ -137,7 +137,8 @@ export default function LabelPage() {
                 <img
                   src={label.logo}
                   alt={label.name}
-                  className="w-32 h-32 object-contain bg-zinc-900 rounded-lg"
+                  className="w-32 h-32 object-cover rounded-lg"
+                  loading="lazy"
                 />
               )}
               <div className="flex-1">

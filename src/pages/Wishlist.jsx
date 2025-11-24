@@ -37,7 +37,7 @@ const Wishlist = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {wishlist.map((item) => (
               <div key={item.id} className="bg-zinc-900 p-4 rounded-lg">
-                <img src={item.image} alt={item.title} className="w-full mb-4" />
+                <img src={item.image} alt={item.title} className="w-full mb-4" loading="lazy" />
                 <h3 className="text-xl font-bold mb-2">{item.title}</h3>
                 <p className="text-sm text-gray-400 mb-2">{item.band}</p>
                 <p className="text-red-600 mb-2">${item.price.toFixed(2)}</p>

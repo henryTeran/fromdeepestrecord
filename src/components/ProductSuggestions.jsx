@@ -29,6 +29,7 @@ const ProductSuggestions = ({ currentProductId, title = "You might also like" })
                   src={item.image}
                   alt={item.title}
                   className="w-full aspect-square object-cover rounded group-hover:opacity-75 transition-opacity"
+                  loading="lazy"
                 />
                 <button
                   onClick={() =>
