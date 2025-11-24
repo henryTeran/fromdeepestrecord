@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { doc, setDoc, getDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useToastStore } from './toastStore';
 
 let unsubscribeFirestore = null;
 let currentUser = null;
@@ -123,6 +124,7 @@ export const useCartStore = create(persist(
       let newCart;
       if (!exists) {
         newCart = [...cart, { ...product, quantity: product.quantity || 1 }];
+        useToastStore.getState().success('Added to cart');
       } else {
         newCart = cart.map(item => {
           const itemKey = item.sku ? `${item.id}-${item.sku}` : item.id;
@@ -130,6 +132,7 @@ export const useCartStore = create(persist(
             ? { ...item, quantity: item.quantity + (product.quantity || 1) }
             : item;
         });
+        useToastStore.getState().success('Cart updated');
       }
 
       set({ cart: newCart });
@@ -159,6 +162,7 @@ export const useCartStore = create(persist(
 
       set({ cart: newCart });
       syncToFirestore(newCart);
+      useToastStore.getState().info('Removed from cart');
     },
 
     clearCart: async () => {

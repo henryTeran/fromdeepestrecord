@@ -1,6 +1,7 @@
 import './styles/index.css';
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
+import ToastContainer from './components/ToastContainer';
 
 import Home from './pages/Home';
 import ProductPage from './pages/ProductPage';
@@ -22,6 +23,7 @@ import AdminGuard from './components/admin/AdminGuard';
 function App() {
   return (
     <AuthProvider>
+      <ToastContainer />
       <div className="min-h-screen bg-zinc-900 text-gray-300">
         <Routes>
           <Route path="/" element={<Home />} />

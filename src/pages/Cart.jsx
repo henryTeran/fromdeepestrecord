@@ -5,9 +5,10 @@ import Navigation from '../components/Navigation';
 import CategoryNav from '../components/CategoryNav';
 import { Footer } from '../components/Footer';
 import { useCartStore } from '../store/cartStore';
-import { Minus, Plus, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Minus, Plus, Trash2, Loader2, AlertCircle, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Head from '../seo/Head';
+import EmptyState from '../components/EmptyState';
 
 const Cart = () => {
   const cart = useCartStore(state => state.cart);
@@ -81,15 +82,13 @@ const Cart = () => {
         <h1 className="text-3xl font-bold mb-8 text-white">Shopping Cart</h1>
 
         {cart.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-400 mb-6">Your cart is empty</p>
-            <Link
-              to="/category/releases"
-              className="inline-block bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700 transition-colors"
-            >
-              Continue Shopping
-            </Link>
-          </div>
+          <EmptyState
+            icon={ShoppingCart}
+            title="Your cart is empty"
+            description="Start adding some releases or merch to your collection"
+            actionLabel="Browse Releases"
+            actionLink="/category/releases"
+          />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">

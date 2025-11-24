@@ -4,13 +4,14 @@ import Header from '../components/Header';
 import Navigation from '../components/Navigation';
 import CategoryNav from '../components/CategoryNav';
 import { Footer } from '../components/Footer';
-import { Heart, Filter, ChevronDown, Loader } from 'lucide-react';
+import { Heart, Filter, ChevronDown, Loader, Search } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 import { useWishlistStore } from '../store/wishlistStore';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import Head from '../seo/Head';
 import { useReleases } from '../hooks/useReleases';
+import EmptyState from '../components/EmptyState';
 
 const CategoryPage = () => {
   const { category } = useParams();
@@ -284,10 +285,22 @@ const CategoryPage = () => {
         )}
 
         {!loading && releases.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-xl text-gray-400">No releases found</p>
-            <p className="text-sm text-gray-500 mt-2">Try adjusting your filters</p>
-          </div>
+          <EmptyState
+            icon={Search}
+            title="No releases found"
+            description="Try adjusting your filters or browse all releases"
+            actionLabel="Clear all filters"
+            action={() => {
+              setFilters({
+                format: '',
+                genre: '',
+                country: '',
+                inStock: false,
+                preOrder: false,
+              });
+              setLastDoc(null);
+            }}
+          />
         )}
 
         {releases.length > 0 && (

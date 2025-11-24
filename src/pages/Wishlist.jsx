@@ -5,6 +5,8 @@ import Navigation from '../components/Navigation';
 import { useWishlistStore } from '../store/wishlistStore';
 import { Link } from 'react-router-dom';
 import Head from '../seo/Head';
+import EmptyState from '../components/EmptyState';
+import { Heart } from 'lucide-react';
 
 const Wishlist = () => {
   const wishlist = useWishlistStore(state => state.wishlist);
@@ -22,7 +24,13 @@ const Wishlist = () => {
       <div className="p-8 text-white">
         <h1 className="text-3xl font-bold mb-6">Mes Favoris</h1>
         {wishlist.length === 0 ? (
-          <p>Aucun article dans votre wishlist.</p>
+          <EmptyState
+            icon={Heart}
+            title="Your wishlist is empty"
+            description="Start adding your favorite releases to your wishlist"
+            actionLabel="Browse Catalog"
+            actionLink="/category/releases"
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {wishlist.map((item) => (
