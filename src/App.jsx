@@ -2,6 +2,8 @@ import './styles/index.css';
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import ToastContainer from './components/ToastContainer';
+import { useEffect } from 'react';
+import { useLanguage } from './contexts/LanguageContext';
 
 import Home from './pages/Home';
 import ProductPage from './pages/ProductPage';
@@ -21,6 +23,13 @@ import ContactMessages from './pages/admin/ContactMessages';
 import AdminGuard from './components/admin/AdminGuard';
 
 function App() {
+  const { language } = useLanguage();
+
+  useEffect(() => {
+    // Update HTML lang attribute when language changes
+    document.documentElement.lang = language;
+  }, [language]);
+
   return (
     <AuthProvider>
       <ToastContainer />
