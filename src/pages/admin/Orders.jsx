@@ -10,9 +10,11 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [fullOrderData, setFullOrderData] = useState({});
 
   useEffect(() => {
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchOrders = async () => {
@@ -25,11 +27,14 @@ const Orders = () => {
       const items = snapshot.docs.map((doc) => {
         const data = doc.data();
         const itemsCount = data.items?.length || 0;
-        const itemsPreview = data.items?.slice(0, 2).map(item => item.name).join(', ') || 'No items';
+        const itemsPreview = data.items?.slice(0, 2).map(item => item.title || item.name || 'Unknown item').join(', ') || 'No items';
+
+        // Store full data for modal
+        fullOrderData[doc.id] = data;
 
         return {
           id: doc.id,
-          customer: data.shipping.email || data.shipping.name,
+          customer: data.shipping?.email || data.shipping?.name || 'Unknown',
           items: itemsCount > 2 ? `${itemsPreview}... (+${itemsCount - 2} more)` : itemsPreview,
           total: `CHF ${(typeof data.totals?.grandTotal === 'number' ? data.totals.grandTotal : 0).toFixed(2)}`,
           status: data.status || 'pending',
@@ -37,6 +42,7 @@ const Orders = () => {
         };
       });
 
+      setFullOrderData(fullOrderData);
       setOrders(items);
     } catch (err) {
       console.error('Error fetching orders:', err);
@@ -119,8 +125,35 @@ const Orders = () => {
 
                 <div className="bg-zinc-900 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-white mb-4">Items</h3>
-                  <div className="text-gray-300">
-                    <p>{selectedOrder.items}</p>
+                  <div className="space-y-4">
+                    {fullOrderData[selectedOrder.id]?.items?.map((item, index) => (
+                      <div key={index} className="bg-zinc-800 rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                          <p className="text-white font-semibold">{item.title || 'Unknown item'}</p>
+                          <p className="text-sm text-gray-400">SKU: {item.sku || 'N/A'}</p>
+                          <p className="text-sm text-gray-400">Quantity: {item.qty || 1}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-bold">CHF {((item.unitPrice || 0) * (item.qty || 1)).toFixed(2)}</p>
+                          <p className="text-sm text-gray-400">CHF {(item.unitPrice || 0).toFixed(2)} each</p>
+                        </div>
+                      </div>
+                    )) || <p className="text-gray-400">No items</p>}
+                    
+                    <div className="border-t border-zinc-700 pt-4 mt-4">
+                      <div className="flex justify-between text-gray-300 mb-2">
+                        <span>Subtotal:</span>
+                        <span>CHF {(fullOrderData[selectedOrder.id]?.totals?.subtotal || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-300 mb-2">
+                        <span>Shipping:</span>
+                        <span>{fullOrderData[selectedOrder.id]?.totals?.shipping > 0 ? `CHF ${fullOrderData[selectedOrder.id].totals.shipping.toFixed(2)}` : 'Free'}</span>
+                      </div>
+                      <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-zinc-700">
+                        <span>Total:</span>
+                        <span>{selectedOrder.total}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
