@@ -41,17 +41,20 @@ const Merch = () => {
         })
         .map((doc) => {
           const data = doc.data();
+          
+          // Debug: log the actual data
+          console.log('Merch data for', doc.id, ':', data);
 
-        return {
-          id: doc.id,
-          name: data.name || 'Untitled',
-          category: data.category || 'Merch',
-          price: `CHF ${(typeof data.price === 'number' ? data.price : 0).toFixed(2)}`,
-          stock: data.stock || 0,
-          status: data.status || 'active',
-          createdAt: safeToDate(data.createdAt)?.toLocaleDateString() || 'Unknown'
-        };
-      });
+          return {
+            id: doc.id,
+            name: data.name || data.title || 'Untitled',
+            category: data.category || 'Merch',
+            price: (typeof data.price === 'number' ? data.price : 0).toFixed(2),
+            stock: data.stock || 0,
+            status: data.status || 'active',
+            createdAt: safeToDate(data.createdAt)?.toLocaleDateString() || 'Unknown'
+          };
+        });
 
       setMerch(items);
     } catch (err) {
@@ -86,9 +89,25 @@ const Merch = () => {
   const columns = [
     { key: 'name', label: 'Name' },
     { key: 'category', label: 'Category' },
-    { key: 'price', label: 'Price' },
+    { 
+      key: 'price', 
+      label: 'Price',
+      render: (value) => `CHF ${value}`
+    },
     { key: 'stock', label: 'Stock' },
-    { key: 'status', label: 'Status' },
+    { 
+      key: 'status', 
+      label: 'Status',
+      render: (value) => (
+        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+          value === 'active' ? 'bg-green-600/20 text-green-400' :
+          value === 'archived' ? 'bg-gray-600/20 text-gray-400' :
+          'bg-yellow-600/20 text-yellow-400'
+        }`}>
+          {value}
+        </span>
+      )
+    },
     { key: 'createdAt', label: 'Created' }
   ];
 
