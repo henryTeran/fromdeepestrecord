@@ -109,15 +109,30 @@ const Cart = () => {
                 <div className="space-y-4">
                   {cart.map((item) => {
                     const itemKey = item.sku ? `${item.id}-${item.sku}` : item.id;
+                    
+                    // Convert signed URLs to public URLs for Firebase Storage
+                    let imageUrl = item.image || item.cover || '/placeholder-album.png';
+                    if (imageUrl.includes('storage.googleapis.com') && imageUrl.includes('X-Goog-Algorithm')) {
+                      // Extract the path and convert to public URL
+                      const match = imageUrl.match(/\/([^?]+)\?/);
+                      if (match) {
+                        const path = match[1];
+                        imageUrl = `https://firebasestorage.googleapis.com/v0/b/deepestrecords.firebasestorage.app/o/${encodeURIComponent(path)}?alt=media`;
+                      }
+                    }
 
                     return (
                       <div key={itemKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-zinc-900 p-4 rounded-lg">
                         <img
-                          src={item.image}
+                          src={imageUrl}
                           alt={item.title}
                           className="w-20 h-20 sm:w-20 sm:h-20 object-cover rounded flex-shrink-0"
                           loading="lazy"
                           crossOrigin="anonymous"
+                          onError={(e) => {
+                            console.error('Image failed to load:', imageUrl);
+                            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23333" width="80" height="80"/%3E%3Ctext x="50%25" y="50%25" fill="%23666" font-size="12" text-anchor="middle" dominant-baseline="middle"%3ENo Image%3C/text%3E%3C/svg%3E';
+                          }}
                         />
                         <div className="flex-1 min-w-0">
                           <Link
@@ -130,7 +145,7 @@ const Cart = () => {
                           {item.format && (
                             <p className="text-gray-500 text-xs">{item.format}</p>
                           )}
-                          <p className="text-red-600 font-bold mt-1">CHF {item.price.toFixed(2)}</p>
+                          <p className="text-red-600 font-bold mt-1">CHF {(item.price || 0).toFixed(2)}</p>
                         </div>
                         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                           <div className="flex items-center space-x-2 bg-zinc-800 rounded">
@@ -172,23 +187,23 @@ const Cart = () => {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Subtotal</span>
-                    <span className="text-white">CHF {subtotal.toFixed(2)}</span>
+                    <span className="text-white">CHF {(subtotal || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Shipping</span>
                     <span className="text-white">
-                      {shipping === 0 ? 'Free' : `CHF ${shipping.toFixed(2)}`}
+                      {shipping === 0 ? 'Free' : `CHF ${(shipping || 0).toFixed(2)}`}
                     </span>
                   </div>
                   {subtotal < 75 && (
                     <p className="text-sm text-yellow-500">
-                      Add CHF {(75 - subtotal).toFixed(2)} more for free shipping!
+                      Add CHF {((75 - subtotal) || 0).toFixed(2)} more for free shipping!
                     </p>
                   )}
                   <div className="border-t border-zinc-700 pt-3">
                     <div className="flex justify-between text-lg font-bold">
                       <span className="text-white">Total</span>
-                      <span className="text-red-600">CHF {total.toFixed(2)}</span>
+                      <span className="text-red-600">CHF {(total || 0).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
