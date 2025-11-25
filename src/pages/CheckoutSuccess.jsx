@@ -1,10 +1,18 @@
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { CheckCircle } from 'lucide-react';
 import Header from '../components/Header';
 import { Footer } from '../components/Footer';
 import Head from '../seo/Head';
+import { useCartStore } from '../store/cartStore';
 
 export default function CheckoutSuccess() {
+  const clearCart = useCartStore(state => state.clearCart);
+
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
+
   return (
     <>
       <Head

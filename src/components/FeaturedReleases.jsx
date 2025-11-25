@@ -65,6 +65,7 @@ const FeaturedReleases = () => {
                       alt={release.title}
                       className="w-full aspect-square object-cover transition-all duration-500 group-hover:scale-110"
                       loading="lazy"
+                      crossOrigin="anonymous"
                     />
                   </Link>
                   
@@ -107,7 +108,7 @@ const FeaturedReleases = () => {
                   
                   <div className="flex items-center justify-between mt-4">
                     <span className="text-2xl font-bold gradient-text">
-                      CHF {price.toFixed(2)}
+                      CHF {(price || 0).toFixed(2)}
                     </span>
                     <button
                       onClick={() => addToCart({ ...release, price, format: format?.type })}

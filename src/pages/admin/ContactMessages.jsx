@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import AdminGuard from '../../components/admin/AdminGuard';
 import Table from '../../components/admin/Table';
-import { Loader2, X, Eye } from 'lucide-react';
+import { Loader2, X, Eye, ArrowLeft } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
 
 const safeToDate = (timestamp) => {
@@ -141,6 +142,13 @@ const ContactMessages = () => {
     <AdminGuard>
       <div className="min-h-screen bg-zinc-900 text-gray-300">
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <Link
+            to="/admin"
+            className="text-gray-400 hover:text-white flex items-center gap-2 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Contact Messages</h1>

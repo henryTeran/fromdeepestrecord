@@ -89,6 +89,7 @@ const MerchForm = () => {
       if (isEdit) {
         await adminApi.merch.update(id, dataToSave);
         alert('Merch updated successfully!');
+        navigate('/admin/merch');
       } else {
         const result = await adminApi.merch.create(dataToSave);
         alert('Merch created successfully!');

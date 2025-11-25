@@ -24,6 +24,7 @@ export default function LabelPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchLabelAndReleases = async () => {
       if (!db) {
         console.warn('Firebase not configured');

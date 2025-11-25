@@ -25,7 +25,7 @@ const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 ${colors[type]} border text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] max-w-md animate-in slide-in-from-top-2 duration-300`}
+      className={`${colors[type]} border text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 min-w-[300px] max-w-md animate-in slide-in-from-top-2 duration-300 pointer-events-auto`}
     >
       {icons[type]}
       <p className="flex-1 text-sm font-medium">{message}</p>

@@ -55,6 +55,7 @@ const Cart = () => {
       const result = await createCheckout({
         items,
         currency: 'CHF',
+        shippingCost: shipping,
         successUrl: `${window.location.origin}/checkout/success`,
         cancelUrl: `${window.location.origin}/checkout/cancel`,
       });
@@ -116,6 +117,7 @@ const Cart = () => {
                           alt={item.title}
                           className="w-20 h-20 sm:w-20 sm:h-20 object-cover rounded flex-shrink-0"
                           loading="lazy"
+                          crossOrigin="anonymous"
                         />
                         <div className="flex-1 min-w-0">
                           <Link

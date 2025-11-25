@@ -7,6 +7,7 @@ import { useToastStore } from './toastStore';
 
 let unsubscribeFirestore = null;
 let currentUser = null;
+let isInitialized = false;
 
 const syncToFirestore = async (cart) => {
   if (!currentUser) return;
@@ -22,49 +23,6 @@ const syncToFirestore = async (cart) => {
   }
 };
 
-const mergeLocalAndFirestoreCart = async (localCart) => {
-  if (!currentUser) return localCart;
-
-  try {
-    const cartRef = doc(db, 'carts', currentUser.uid);
-    const cartSnap = await getDoc(cartRef);
-
-    if (!cartSnap.exists()) {
-      if (localCart.length > 0) {
-        await setDoc(cartRef, {
-          items: localCart,
-          updatedAt: new Date().toISOString(),
-        });
-      }
-      return localCart;
-    }
-
-    const firestoreCart = cartSnap.data().items || [];
-
-    const merged = [...firestoreCart];
-    localCart.forEach(localItem => {
-      const existingIndex = merged.findIndex(
-        item => item.id === localItem.id && item.sku === localItem.sku
-      );
-      if (existingIndex >= 0) {
-        merged[existingIndex].quantity += localItem.quantity;
-      } else {
-        merged.push(localItem);
-      }
-    });
-
-    await setDoc(cartRef, {
-      items: merged,
-      updatedAt: new Date().toISOString(),
-    });
-
-    return merged;
-  } catch (error) {
-    console.error('Error merging carts:', error);
-    return localCart;
-  }
-};
-
 export const useCartStore = create(persist(
   (set, get) => ({
     cart: [],
@@ -73,7 +31,11 @@ export const useCartStore = create(persist(
     setHydrated: (hydrated) => set({ isHydrated: hydrated }),
 
     initializeAuth: () => {
+      if (isInitialized) return;
+      isInitialized = true;
+
       onAuthStateChanged(auth, async (user) => {
+        // Nettoyer l'ancien listener
         if (unsubscribeFirestore) {
           unsubscribeFirestore();
           unsubscribeFirestore = null;
@@ -81,20 +43,35 @@ export const useCartStore = create(persist(
 
         if (user) {
           currentUser = user;
-          const localCart = get().cart;
-          const mergedCart = await mergeLocalAndFirestoreCart(localCart);
-          set({ cart: mergedCart });
-
+          
+          // Récupérer le panier depuis Firestore (source of truth)
           const cartRef = doc(db, 'carts', user.uid);
+          const cartSnap = await getDoc(cartRef);
 
+          if (cartSnap.exists()) {
+            const firestoreCart = cartSnap.data().items || [];
+            set({ cart: firestoreCart });
+          } else {
+            // Pas de panier en Firestore, sync le panier local s'il existe
+            const localCart = get().cart;
+            if (localCart.length > 0) {
+              await syncToFirestore(localCart);
+            } else {
+              set({ cart: [] });
+            }
+          }
+
+          // Écouter les changements sans re-merge
           const cartDoc = await getDoc(cartRef);
-          if (cartDoc.exists() || mergedCart.length > 0) {
+          if (cartDoc.exists() || get().cart.length > 0) {
             unsubscribeFirestore = onSnapshot(
               cartRef,
               (snapshot) => {
                 if (snapshot.exists()) {
                   const firestoreCart = snapshot.data().items || [];
                   set({ cart: firestoreCart });
+                } else {
+                  set({ cart: [] });
                 }
               },
               (error) => {
@@ -105,7 +82,9 @@ export const useCartStore = create(persist(
             );
           }
         } else {
+          // Déconnexion = reset complet
           currentUser = null;
+          set({ cart: [] });
         }
       });
     },

@@ -4,7 +4,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import AdminGuard from '../../components/admin/AdminGuard';
 import Table from '../../components/admin/Table';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, ArrowLeft } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
 
 const safeToDate = (timestamp) => {
@@ -46,7 +46,7 @@ const Merch = () => {
           id: doc.id,
           name: data.name || 'Untitled',
           category: data.category || 'Merch',
-          price: `CHF ${data.price?.toFixed(2) || '0.00'}`,
+          price: `CHF ${(typeof data.price === 'number' ? data.price : 0).toFixed(2)}`,
           stock: data.stock || 0,
           status: data.status || 'active',
           createdAt: safeToDate(data.createdAt)?.toLocaleDateString() || 'Unknown'
@@ -106,6 +106,13 @@ const Merch = () => {
     <AdminGuard>
       <div className="min-h-screen bg-zinc-900 text-gray-300">
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <Link
+            to="/admin"
+            className="text-gray-400 hover:text-white flex items-center gap-2 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Merchandise</h1>

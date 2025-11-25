@@ -102,7 +102,7 @@ const VariantSelector = ({ formats = [], selectedSku, onSelectVariant }) => {
 
                 <div className="text-right ml-4">
                   <div className="text-lg font-bold text-red-600">
-                    CHF {format.price.toFixed(2)}
+                    CHF {(format.price || 0).toFixed(2)}
                   </div>
                   {format.stock > 0 && format.stock <= 10 && !isDisabled && (
                     <div className="text-xs text-gray-400 mt-1">

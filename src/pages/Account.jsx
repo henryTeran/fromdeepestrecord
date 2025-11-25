@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import Header from '../components/Header';
 import Navigation from '../components/Navigation';
 import CategoryNav from '../components/CategoryNav';
@@ -7,6 +9,84 @@ import { Footer } from '../components/Footer';
 import { useAuth } from '../hooks/useAuth';
 import Head from '../seo/Head';
 import { Loader2, LogOut, User } from 'lucide-react';
+
+const OrdersHistory = ({ userId }) => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const ordersRef = collection(db, 'orders');
+        const q = query(ordersRef, orderBy('createdAt', 'desc'), limit(100));
+        const snapshot = await getDocs(q);
+        
+        const ordersData = snapshot.docs
+          .filter(doc => {
+            const data = doc.data();
+            // Support both userRef (reference) and userId (string)
+            if (data.userRef && data.userRef.id) {
+              return data.userRef.id === userId;
+            }
+            return data.userId === userId;
+          })
+          .slice(0, 20)
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          
+        setOrders(ordersData);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [userId]);
+
+  if (loading) {
+    return <Loader2 className="w-6 h-6 animate-spin text-red-600 mx-auto" />;
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-400">
+        <p>No orders yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {orders.map(order => (
+        <div key={order.id} className="bg-zinc-800 p-4 rounded-lg">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <p className="font-mono text-sm text-gray-400">#{order.id.slice(0, 8)}</p>
+              <p className="text-white font-semibold">
+                CHF {(order.totals.grandTotal || 0).toFixed(2)}
+              </p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              order.status === 'paid' ? 'bg-green-600/20 text-green-400' : 'bg-gray-600/20 text-gray-400'
+            }`}>
+              {order.status}
+            </span>
+          </div>
+          <p className="text-sm text-gray-400">
+            {new Date(order.createdAt?.seconds * 1000 || Date.now()).toLocaleDateString()}
+          </p>
+          <p className="text-sm text-gray-400">
+            {order.items?.length || 0} item(s)
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Account = () => {
   const { user, loading, signIn, signUp, signOut } = useAuth();
@@ -189,6 +269,11 @@ const Account = () => {
                     Shopping Cart
                   </button>
                 </div>
+              </div>
+
+              <div className="border-t border-zinc-800 pt-6">
+                <h2 className="text-xl font-bold text-white mb-4">My Orders</h2>
+                <OrdersHistory userId={user.uid} />
               </div>
             </div>
           </div>

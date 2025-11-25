@@ -36,18 +36,18 @@ const Wishlist = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {wishlist.map((item) => (
-              <div key={item.id} className="bg-zinc-900 p-4 rounded-lg">
-                <img src={item.image} alt={item.title} className="w-full mb-4" loading="lazy" />
-                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-400 mb-2">{item.band}</p>
-                <p className="text-red-600 mb-2">${item.price.toFixed(2)}</p>
+              <div key={item.id} className="bg-zinc-800 p-4 rounded-lg">
+                <img src={item.image} alt={item.title} className="w-full h-64 object-cover mb-4 rounded" loading="lazy" crossOrigin="anonymous" />
+                <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-400 mb-2">{item.artist || 'Unknown Artist'}</p>
+                <p className="text-red-600 font-bold mb-4">CHF {item.price?.toFixed(2) || '0.00'}</p>
                 <div className="flex justify-between items-center">
-                  <Link to={`/product/${item.id}`} className="text-sm text-white underline">
+                  <Link to={`/release/${item.slug || item.id}`} className="text-sm text-white hover:text-red-500 transition-colors">
                     {t('view')}
                   </Link>
                   <button
                     onClick={() => removeFromWishlist(item.id)}
-                    className="text-red-500 text-sm"
+                    className="text-red-500 hover:text-red-400 text-sm transition-colors"
                   >
                     {t('remove')}
                   </button>

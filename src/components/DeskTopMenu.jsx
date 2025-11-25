@@ -95,11 +95,11 @@ const DesktopMenu = () => {
                     <div className="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
                       {cart.map((item) => (
                         <div key={item.id} className="flex items-center space-x-4 bg-zinc-800/80 p-4 rounded-xl border border-zinc-700/50 hover:bg-zinc-700/80 transition-all duration-300">
-                          <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
+                          <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-lg" crossOrigin="anonymous" loading="lazy" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-white truncate">{item.title}</p>
                             <p className="text-xs text-gray-400">{item.band}</p>
-                            <p className="text-sm text-red-400 font-semibold">{item.quantity} × ${item.price.toFixed(2)}</p>
+                            <p className="text-sm text-red-400 font-semibold">{item.quantity} × ${(item.price || 0).toFixed(2)}</p>
                           </div>
                           <button
                             onClick={() => removeFromCart(item.id)}
@@ -114,7 +114,7 @@ const DesktopMenu = () => {
                     <div className="border-t border-zinc-700 mt-6 pt-6 bg-zinc-900/50 -mx-6 px-6 pb-6 rounded-b-2xl">
                       <div className="flex justify-between items-center mb-6">
                         <span className="text-lg font-bold text-white">Total</span>
-                        <span className="text-2xl font-bold text-red-500">${cartTotal.toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-red-500">${(cartTotal || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex space-x-3">
                         <Link 
@@ -124,9 +124,13 @@ const DesktopMenu = () => {
                         >
                           View Cart
                         </Link>
-                        <button className="flex-1 btn-primary">
+                        <Link
+                          to="/cart"
+                          className="flex-1 btn-primary text-center py-3"
+                          onClick={() => setShowCartDropdown(false)}
+                        >
                           Checkout
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </>

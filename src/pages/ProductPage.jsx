@@ -61,6 +61,7 @@ const ProductPage = () => {
   const isInWishlist = useWishlistStore(state => state.isInWishlist);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchRelease = async () => {
       try {
         setLoading(true);
@@ -70,8 +71,11 @@ const ProductPage = () => {
         const q = query(releasesRef, limit(100));
         const snapshot = await getDocs(q);
 
-        // Find release by slug client-side
-        const releaseDoc = snapshot.docs.find(doc => doc.data().slug === slug);
+        // Find release by slug OR id client-side
+        const releaseDoc = snapshot.docs.find(doc => {
+          const data = doc.data();
+          return data.slug === slug || doc.id === slug;
+        });
 
         if (!releaseDoc) {
           setError('Release not found');
@@ -177,9 +181,13 @@ const ProductPage = () => {
       image: release.cover,
       sku: selectedVariant.sku,
       format: selectedVariant.type,
-      stripePriceId: selectedVariant.stripePriceId,
       quantity: 1,
     };
+
+    // Only add stripePriceId if it exists and starts with 'price_'
+    if (selectedVariant.stripePriceId && selectedVariant.stripePriceId.startsWith('price_')) {
+      cartItem.stripePriceId = selectedVariant.stripePriceId;
+    }
 
     addToCart(cartItem);
   };
@@ -190,6 +198,7 @@ const ProductPage = () => {
     artist: release.artist?.name,
     price: currentPrice,
     image: release.cover,
+    slug: release.slug,
   };
 
   const tabs = [
@@ -286,8 +295,8 @@ const ProductPage = () => {
               )}
             </div>
 
-            <div className="text-3xl font-bold text-red-600">
-              CHF {currentPrice.toFixed(2)}
+            <div className="text-3xl font-bold text-red-600 mb-6">
+              CHF {(currentPrice || 0).toFixed(2)}
             </div>
 
             {release.formats && release.formats.length > 0 && (

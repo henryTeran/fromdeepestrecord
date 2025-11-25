@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Navigation from '../components/Navigation';
@@ -50,6 +50,7 @@ const CategoryPage = () => {
 
   // Update filters when category changes
   useEffect(() => {
+    window.scrollTo(0, 0);
     setFilters(prev => ({
       ...prev,
       format: getCategoryFormat(category),
@@ -108,66 +109,7 @@ const CategoryPage = () => {
   };
 
   if (category === 'contact') {
-    return (
-      <div className="min-h-screen bg-zinc-900 text-gray-300">
-        <Head
-          title="Contact Us | From Deepest Record"
-          description="Get in touch with From Deepest Record. Contact information and message form."
-        />
-        <Header />
-        <Navigation />
-        <CategoryNav />
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <h1 className="text-4xl font-bold mb-8 text-center">Contact Us</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-black p-6 rounded-lg">
-              <h2 className="text-2xl font-bold mb-4 text-red-600">Get in Touch</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold">Address</h3>
-                  <p className="text-gray-400">Geneva, Switzerland</p>
-                </div>
-                <div>
-                  <h3 className="font-bold">Email</h3>
-                  <p className="text-gray-400">contact@fromdeepestrecord.com</p>
-                </div>
-                <div>
-                  <h3 className="font-bold">Business Hours</h3>
-                  <p className="text-gray-400">Monday - Friday: 9:00 AM - 6:00 PM CET</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-black p-6 rounded-lg">
-              <h2 className="text-2xl font-bold mb-4 text-red-600">Send Message</h2>
-              <form className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  className="w-full bg-zinc-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-red-600"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  className="w-full bg-zinc-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-red-600"
-                />
-                <textarea
-                  placeholder="Your Message"
-                  rows="4"
-                  className="w-full bg-zinc-800 text-white px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-red-600"
-                ></textarea>
-                <button
-                  type="submit"
-                  className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors"
-                >
-                  Send Message
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <Navigate to="/contact" replace />;
   }
 
   return (
@@ -393,7 +335,7 @@ const CategoryPage = () => {
 
                     <div className="flex justify-between items-center">
                       <span className="text-red-600 font-bold">
-                        {lowestPrice > 0 ? `CHF ${lowestPrice.toFixed(2)}` : 'N/A'}
+                        {lowestPrice > 0 ? `CHF ${(lowestPrice || 0).toFixed(2)}` : 'N/A'}
                       </span>
                       <button
                         onClick={() => addToCart(product)}

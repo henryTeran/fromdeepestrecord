@@ -60,6 +60,15 @@ export const Footer = () => {
             <ul className="space-y-4">
               <li>
                 <Link 
+                  to="/contact" 
+                  className="text-gray-400 hover:text-red-400 transition-colors duration-300 flex items-center space-x-2 group"
+                >
+                  <span className="w-2 h-2 bg-gray-600 rounded-full group-hover:bg-red-400 transition-colors duration-300"></span>
+                  <span>Contact Us</span>
+                </Link>
+              </li>
+              <li>
+                <Link 
                   to="/shipping" 
                   className="text-gray-400 hover:text-red-400 transition-colors duration-300 flex items-center space-x-2 group"
                 >

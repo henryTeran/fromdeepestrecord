@@ -37,14 +37,17 @@ const Dashboard = () => {
         let totalSales = 0;
         ordersSnap.forEach(doc => {
           const order = doc.data();
-          totalSales += order.total || 0;
+          const grandTotal = order.totals?.grandTotal;
+          if (typeof grandTotal === 'number' && !isNaN(grandTotal)) {
+            totalSales += grandTotal;
+          }
         });
 
         setStats([
           { label: 'Total Releases', value: releasesCount.toString(), icon: Package, link: '/admin/releases' },
           { label: 'Merchandise', value: merchCount.toString(), icon: ShoppingBag, link: '/admin/merch' },
           { label: 'Contact Messages', value: messagesCount.toString(), icon: Mail, link: '/admin/contact' },
-          { label: 'Total Sales', value: `CHF ${totalSales.toFixed(2)}`, icon: TrendingUp, link: '/admin/orders' },
+          { label: 'Total Sales', value: `CHF ${(totalSales || 0).toFixed(2)}`, icon: TrendingUp, link: '/admin/orders' },
         ]);
       } catch (err) {
         console.error('Error fetching stats:', err);

@@ -37,6 +37,7 @@ interface CheckoutItem {
 interface CheckoutSessionData {
   items: CheckoutItem[];
   currency?: string;
+  shippingCost?: number;
   successUrl: string;
   cancelUrl: string;
 }
@@ -50,7 +51,7 @@ export const createCheckoutSession = functions.https.onCall(
       );
     }
 
-    const { items, currency = "CHF", successUrl, cancelUrl } = data;
+    const { items, currency = "CHF", shippingCost = 0, successUrl, cancelUrl } = data;
 
     if (!items || items.length === 0) {
       throw new functions.https.HttpsError(
@@ -111,6 +112,20 @@ export const createCheckoutSession = functions.https.onCall(
         quantity: item.qty,
       };
     });
+
+    // Add shipping cost if > 0
+    if (shippingCost > 0) {
+      lineItems.push({
+        price_data: {
+          currency: (currency || "CHF").toLowerCase(),
+          product_data: {
+            name: "Shipping",
+          },
+          unit_amount: Math.round(shippingCost * 100),
+        },
+        quantity: 1,
+      });
+    }
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -206,6 +221,10 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
         0
       );
 
+      // Get the total amount from Stripe (in cents) and convert to currency units
+      const grandTotal = session.amount_total ? session.amount_total / 100 : subtotal;
+      const shipping = Math.max(0, grandTotal - subtotal);
+
       const orderData = {
         userRef: db.collection("users").doc(uid),
         items: items.map((item: any) => ({
@@ -218,9 +237,9 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
         })),
         totals: {
           subtotal,
-          shipping: 0,
+          shipping,
           tax: 0,
-          grandTotal: subtotal,
+          grandTotal,
           currency: session.currency?.toUpperCase() || "CHF",
         },
         shipping: {

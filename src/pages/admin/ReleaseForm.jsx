@@ -130,10 +130,10 @@ const ReleaseForm = () => {
       if (isEdit) {
         await adminApi.releases.update(id, dataToSave);
         alert('Release updated successfully!');
+        navigate('/admin/releases');
       } else {
         const result = await adminApi.releases.create(dataToSave);
         alert('Release created successfully!');
-        // Retour à la liste pour continuer le workflow d'édition/visualisation
         navigate('/admin/releases');
       }
     } catch (err) {
