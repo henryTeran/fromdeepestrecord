@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 // Lazy loading des pages pour code splitting
 const Home = lazy(() => import('./pages/Home'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
+const MerchPage = lazy(() => import('./pages/MerchPage'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
@@ -51,7 +52,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/releases" element={<CategoryPage />} />
             <Route path="/release/:slug" element={<ProductPage />} />
-            <Route path="/merch/:id" element={<ProductPage isMerch={true} />} />
+            <Route path="/merch/:id" element={<MerchPage />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/product-test" element={<ProductPage />} />
             <Route path="/category/:category" element={<CategoryPage />} />
