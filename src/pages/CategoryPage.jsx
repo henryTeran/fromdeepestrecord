@@ -1,5 +1,6 @@
 import { useParams, useSearchParams, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useMerch } from '../hooks/useMerch';
 import Header from '../components/Header';
 import Navigation from '../components/Navigation';
 import CategoryNav from '../components/CategoryNav';
@@ -57,8 +58,20 @@ const CategoryPage = () => {
       preOrder: category === 'preorders'
     }));
     setLastDoc(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
+
+  // Hook pour récupérer les merch items (seulement si category === 'merchandise')
+  const shouldFetchMerch = category === 'merchandise';
+  const { 
+    merchItems, 
+    loading: merchLoading, 
+    error: merchError 
+  } = useMerch(
+    {},
+    sortBy,
+    100,
+    shouldFetchMerch  // enabled parameter
+  );
 
   const { releases, loading, error, hasMore, lastVisible } = useReleases(
     filters,
@@ -66,6 +79,11 @@ const CategoryPage = () => {
     24,
     lastDoc
   );
+
+  // Use merch items if category is merchandise, otherwise use releases
+  const displayItems = category === 'merchandise' ? merchItems : releases;
+  const displayLoading = category === 'merchandise' ? merchLoading : loading;
+  const displayError = category === 'merchandise' ? merchError : error;
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -238,20 +256,20 @@ const CategoryPage = () => {
           </div>
         )}
 
-        {loading && !lastDoc && (
+        {displayLoading && !lastDoc && (
           <div className="flex justify-center items-center py-20">
             <Loader className="w-8 h-8 animate-spin text-red-600" />
           </div>
         )}
 
-        {error && (
+        {displayError && (
           <div className="text-center py-20">
-            <p className="text-red-600">Error loading releases</p>
-            <p className="text-sm text-gray-400 mt-2">{error.message}</p>
+            <p className="text-red-600">Error loading {category === 'merchandise' ? 'merchandise' : 'releases'}</p>
+            <p className="text-sm text-gray-400 mt-2">{displayError.message}</p>
           </div>
         )}
 
-        {!loading && releases.length === 0 && (
+        {!displayLoading && displayItems.length === 0 && (
           <EmptyState
             icon={Search}
             title={t('noReleasesFound')}
@@ -270,10 +288,10 @@ const CategoryPage = () => {
           />
         )}
 
-        {releases.length > 0 && (
+        {displayItems.length > 0 && (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-              {releases.map((release) => {
+              {displayItems.map((release) => {
                 const lowestPrice = release.formats && release.formats.length > 0
                   ? Math.min(...release.formats.map(f => f.price))
                   : 0;
@@ -326,7 +344,7 @@ const CategoryPage = () => {
                       </button>
                     </div>
 
-                    <Link to={`/release/${release.slug}`} className="block">
+                    <Link to={release.isMerch ? `/merch/${release.id}` : `/release/${release.slug}`} className="block">
                       <h3 className="font-bold text-sm mb-1 group-hover:text-red-600 transition-colors line-clamp-2">
                         {release.title}
                       </h3>
@@ -350,7 +368,7 @@ const CategoryPage = () => {
               })}
             </div>
 
-            {hasMore && (
+            {hasMore && category !== 'merchandise' && (
               <div className="flex justify-center mt-12">
                 <button
                   onClick={loadMore}

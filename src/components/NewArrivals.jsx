@@ -5,6 +5,7 @@ import { useCartStore } from "../store/cartStore";
 import { Link } from "react-router-dom";
 import { useWishlistStore } from "../store/wishlistStore";
 import { useReleases } from "../hooks/useReleases";
+import { useMerch } from "../hooks/useMerch";
 
 export const NewArrivals = () => {
   const addToCart = useCartStore((state) => state.addToCart);
@@ -13,10 +14,14 @@ export const NewArrivals = () => {
   const isInWishlist = useWishlistStore(state => state.isInWishlist);
   const { t } = useLanguage();
   
-  // Fetch latest releases from Firebase
-  const { releases, loading } = useReleases({}, 'newest', 6);
+  // Fetch latest releases and merch from Firebase
+  const { releases, loading: releasesLoading } = useReleases({}, 'newest', 6);
+  const { merchItems, loading: merchLoading } = useMerch({}, 'newest', 3);
   
-  if (loading) {
+  // Combine releases and merch
+  const allItems = [...releases.slice(0, 4), ...merchItems.slice(0, 2)];
+  
+  if (releasesLoading || merchLoading) {
     return (
       <section className="py-20 bg-gradient-to-b from-zinc-900 to-black">
         <div className="max-w-7xl mx-auto px-6 flex justify-center items-center min-h-[400px]">
@@ -53,7 +58,7 @@ export const NewArrivals = () => {
 
         {/* Products List */}
         <div className="space-y-6">
-          {releases.slice(0, 6).map((release, index) => (
+          {allItems.map((release, index) => (
             <div
               key={release.id}
               className="glass rounded-2xl p-6 hover:bg-white/10 transition-all duration-500 group animate-slideInRight"
@@ -78,7 +83,7 @@ export const NewArrivals = () => {
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
                   <Link 
-                    to={`/release/${release.slug}`} 
+                    to={release.isMerch ? `/merch/${release.id}` : `/release/${release.slug}`}
                     className="block group-hover:text-red-400 transition-colors duration-300"
                   >
                     <h3 className="text-xl font-bold text-white mb-1 truncate">

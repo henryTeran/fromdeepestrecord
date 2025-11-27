@@ -51,6 +51,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/releases" element={<CategoryPage />} />
             <Route path="/release/:slug" element={<ProductPage />} />
+            <Route path="/merch/:id" element={<ProductPage isMerch={true} />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/product-test" element={<ProductPage />} />
             <Route path="/category/:category" element={<CategoryPage />} />

@@ -45,8 +45,8 @@ const convertTimestamps = (obj) => {
   return converted;
 };
 
-const ProductPage = () => {
-  const { slug } = useParams();
+const ProductPage = ({ isMerch = false }) => {
+  const { slug, id } = useParams();
   const { t } = useLanguage();
   const [release, setRelease] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,20 +62,66 @@ const ProductPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const fetchRelease = async () => {
+    const fetchItem = async () => {
       try {
         setLoading(true);
 
-        // Fetch all releases and filter client-side to avoid index requirements
-        const releasesRef = collection(db, 'releases');
-        const q = query(releasesRef, limit(100));
-        const snapshot = await getDocs(q);
+        if (isMerch) {
+          // Fetch merch item
+          const merchDoc = await getDoc(doc(db, 'merch', id || slug));
+          
+          if (!merchDoc.exists()) {
+            setError(new Error('Merch item not found'));
+            setLoading(false);
+            return;
+          }
 
-        // Find release by slug OR id client-side
-        const releaseDoc = snapshot.docs.find(doc => {
-          const data = doc.data();
-          return data.slug === slug || doc.id === slug;
-        });
+          const data = merchDoc.data();
+          
+          // Extraire la première image de l'array images
+          let coverImage = '';
+          if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+            coverImage = data.images[0];
+          } else if (data.image) {
+            coverImage = data.image;
+          } else if (data.cover) {
+            coverImage = data.cover;
+          }
+
+          const merchData = {
+            id: merchDoc.id,
+            title: data.name || data.title || 'Merch Item',
+            artist: { name: 'Merchandise' },
+            cover: coverImage,
+            images: data.images || [],
+            description: data.description || '',
+            formats: [{
+              type: data.category || 'Merch',
+              name: data.name || 'Standard',
+              price: data.price || 0,
+              stock: data.stock || 0,
+              sku: data.sku || merchDoc.id,
+              description: data.description || ''
+            }],
+            sizes: data.sizes || [],
+            slug: merchDoc.id,
+            isMerch: true,
+            exclusive: data.exclusive || false,
+            seo: data.seo || {}
+          };
+
+          setRelease(merchData);
+          setSelectedVariant(merchData.formats[0]);
+        } else {
+          // Fetch release (existing code)
+          const releasesRef = collection(db, 'releases');
+          const q = query(releasesRef, limit(100));
+          const snapshot = await getDocs(q);
+
+          const releaseDoc = snapshot.docs.find(doc => {
+            const data = doc.data();
+            return data.slug === slug || doc.id === slug;
+          });
 
         if (!releaseDoc) {
           setError('Release not found');
@@ -119,17 +165,18 @@ const ProductPage = () => {
             .slice(0, 4);
           setRelatedReleases(related);
         }
+        }
 
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching release:', err);
+        console.error('Error fetching item:', err);
         setError(err.message);
         setLoading(false);
       }
     };
 
-    fetchRelease();
-  }, [slug]);
+    fetchItem();
+  }, [slug, id, isMerch]);
 
   if (loading) {
     return (
